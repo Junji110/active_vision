@@ -1,0 +1,412 @@
+{
+	"Subject": [
+		{"name": "TrivialName", "value": "Hime", "unit": "", "dtype": "string"},
+		{"name": "Species", "value": "Macaca Fuscata", "unit": "", "dtype": "string"},
+		{"name": "Gender", "value": "female", "unit": "", "dtype": "string"},
+		{"name": "Birthday", "value": "2007-07-29", "unit": "", "dtype": "date"},
+		{"name": "ContactInformation", "value": "Yukako Yamane (yukako@bpe.es.osaka-u.ac.jp)", "unit": "", "dtype": "string"},
+		{"name": "Weight", "value": 0.0, "unit": "kg", "dtype": "float"},
+		{"name": "HealthStatus", "value": "", "unit": "", "dtype": "string"},
+ 		{"name": "Comment", "value": "", "unit": "", "dtype": "string"}
+		],
+	
+	"Setup": [
+		{"name": "Location", "value": "4A4-5", "unit": "", "dtype": "string"},
+		{"name": "Creator", "value": "Yukako Yamane", "unit": "", "dtype": "person"},
+		{"name": "Maintainer", "value": "Yukako Yamane", "unit": "", "dtype": "person"},
+		{"name": "Description", "value": "Awake experimetn setup in Suita Campus", "unit": "", "dtype": "text"},
+		{"name": "Comment", "value": "", "unit": "", "dtype": "text"}
+		],
+	
+	"Setup/HardwareProperties": [
+		{"name": "Comment", "value": "", "unit": "", "dtype": "text"}
+		],
+	
+	"Setup/HardwareProperties/HeadStage1": [
+		{"name": "Manufacturer", "value": "Plexon", "unit": "", "dtype": "string"},
+		{"name": "Model", "value": "HST/32V-G20", "unit": "", "dtype": "string"},
+		{"name": "SerialNo", "value": "HST1", "unit": "", "dtype": "string"},
+		{"name": "Type", "value": "Head stage for high-impedance electrodes", "unit": "", "dtype": "string"},
+		{"name": "Gain", "value": 20, "unit": "", "dtype": "int"},
+		{"name": "ChannelNumber", "value": 32, "unit": "", "dtype": "int"},
+		{"name": "Description", "value": "This head stage has 32 channels with fixed gain (x20).", "unit": "", "dtype": "text"},
+		{"name": "Website", "value": "http://www.plexon.com/products/headstages", "unit": "", "dtype": "URL"},
+		{"name": "Owner", "value": "Hiroshi Tamura", "unit": "", "dtype": "person"},
+		{"name": "Comment", "value": "", "unit": "", "dtype": "text"}
+		],
+	
+	"Setup/HardwareProperties/HeadStage2": [
+		{"name": "Manufacturer", "value": "Plexon", "unit": "", "dtype": "string"},
+		{"name": "Model", "value": "HST/32V-G20", "unit": "", "dtype": "string"},
+		{"name": "SerialNo", "value": "HST2", "unit": "", "dtype": "string"},
+		{"name": "Type", "value": "Head stage for high-impedance electrodes", "unit": "", "dtype": "string"},
+		{"name": "Gain", "value": 20, "unit": "", "dtype": "int"},
+		{"name": "ChannelNumber", "value": 32, "unit": "", "dtype": "int"},
+		{"name": "Description", "value": "This head stage has 32 channels with fixed gain (x20).", "unit": "", "dtype": "text"},
+		{"name": "Website", "value": "http://www.plexon.com/products/headstages", "unit": "", "dtype": "URL"},
+		{"name": "Owner", "value": "Hiroshi Tamura", "unit": "", "dtype": "person"},
+		{"name": "Comment", "value": "", "unit": "", "dtype": "text"}
+		],
+
+	"Setup/HardwareProperties/Amplifier1": [
+		{"name": "Manufacturer", "value": "Plexon", "unit": "", "dtype": "string"},
+		{"name": "Model", "value": "PBX 2/64wb-G50", "unit": "", "dtype": "string"},
+		{"name": "SerialNo", "value": "PRA-G-WB-04-003", "unit": "", "dtype": "string"},
+		{"name": "Type", "value": "Preamplifier", "unit": "", "dtype": "string"},
+		{"name": "Gain", "value": 50, "unit": "", "dtype": "int"},
+		{"name": "ChannelNumber", "value": 16, "unit": "", "dtype": "int"},
+		{"name": "HighpassCutoff", "value": 0.7, "unit": "Hz", "dtype": "float"},
+		{"name": "LowpassCutoff", "value": 8000, "unit": "Hz", "dtype": "float"},
+		{"name": "Description", "value": "This PBX Preamplifier is one of 4 wide band field potential boards, each of which accepts 16ch signals. Bandpass filter range (0.7-8000Hz) and the gain (x50) is fixed.", "unit": "", "dtype": "text"},
+		{"name": "Website", "value": "http://www.plexon.com/products/pbx-preamplifier", "unit": "", "dtype": "URL"},
+		{"name": "Owner", "value": "Hiroshi Tamura", "unit": "", "dtype": "person"},
+		{"name": "Comment", "value": "", "unit": "", "dtype": "text"}
+		],
+
+	"Setup/HardwareProperties/Amplifier2": [
+		{"name": "Manufacturer", "value": "Plexon", "unit": "", "dtype": "string"},
+		{"name": "Model", "value": "PBX 2/64wb-G50", "unit": "", "dtype": "string"},
+		{"name": "SerialNo", "value": "PRA-G-WB-04-004", "unit": "", "dtype": "string"},
+		{"name": "Type", "value": "Preamplifier", "unit": "", "dtype": "string"},
+		{"name": "Gain", "value": 50, "unit": "", "dtype": "int"},
+		{"name": "ChannelNumber", "value": 16, "unit": "", "dtype": "int"},
+		{"name": "HighpassCutoff", "value": 0.7, "unit": "Hz", "dtype": "float"},
+		{"name": "LowpassCutoff", "value": 8000, "unit": "Hz", "dtype": "float"},
+		{"name": "Description", "value": "This PBX Preamplifier is one of 4 wide band field potential boards, each of which accepts 16ch signals. Bandpass filter range (0.7-8000Hz) and the gain (x50) is fixed.", "unit": "", "dtype": "text"},
+		{"name": "Website", "value": "http://www.plexon.com/products/pbx-preamplifier", "unit": "", "dtype": "URL"},
+		{"name": "Owner", "value": "Hiroshi Tamura", "unit": "", "dtype": "person"},
+		{"name": "Comment", "value": "", "unit": "", "dtype": "text"}
+		],
+
+	"Setup/HardwareProperties/Amplifier3": [
+		{"name": "Manufacturer", "value": "Plexon", "unit": "", "dtype": "string"},
+		{"name": "Model", "value": "PBX 2/64wb-G50", "unit": "", "dtype": "string"},
+		{"name": "SerialNo", "value": "PRA-G-WB-04-005", "unit": "", "dtype": "string"},
+		{"name": "Type", "value": "Preamplifier", "unit": "", "dtype": "string"},
+		{"name": "Gain", "value": 50, "unit": "", "dtype": "int"},
+		{"name": "ChannelNumber", "value": 16, "unit": "", "dtype": "int"},
+		{"name": "HighpassCutoff", "value": 0.7, "unit": "Hz", "dtype": "float"},
+		{"name": "LowpassCutoff", "value": 8000, "unit": "Hz", "dtype": "float"},
+		{"name": "Description", "value": "This PBX Preamplifier is one of 4 wide band field potential boards, each of which accepts 16ch signals. Bandpass filter range (0.7-8000Hz) and the gain (x50) is fixed.", "unit": "", "dtype": "text"},
+		{"name": "Website", "value": "http://www.plexon.com/products/pbx-preamplifier", "unit": "", "dtype": "URL"},
+		{"name": "Owner", "value": "Hiroshi Tamura", "unit": "", "dtype": "person"},
+		{"name": "Comment", "value": "", "unit": "", "dtype": "text"}
+		],
+
+	"Setup/HardwareProperties/Amplifier4": [
+		{"name": "Manufacturer", "value": "Plexon", "unit": "", "dtype": "string"},
+		{"name": "Model", "value": "PBX 2/64wb-G50", "unit": "", "dtype": "string"},
+		{"name": "SerialNo", "value": "PRA-G-WB-04-006", "unit": "", "dtype": "string"},
+		{"name": "Type", "value": "Preamplifier", "unit": "", "dtype": "string"},
+		{"name": "Gain", "value": 50, "unit": "", "dtype": "int"},
+		{"name": "ChannelNumber", "value": 16, "unit": "", "dtype": "int"},
+		{"name": "HighpassCutoff", "value": 0.7, "unit": "Hz", "dtype": "float"},
+		{"name": "LowpassCutoff", "value": 8000, "unit": "Hz", "dtype": "float"},
+		{"name": "Description", "value": "This PBX Preamplifier is one of 4 wide band field potential boards, each of which accepts 16ch signals. Bandpass filter range (0.7-8000Hz) and the gain (x50) is fixed.", "unit": "", "dtype": "text"},
+		{"name": "Website", "value": "http://www.plexon.com/products/pbx-preamplifier", "unit": "", "dtype": "URL"},
+		{"name": "Owner", "value": "Hiroshi Tamura", "unit": "", "dtype": "person"},
+		{"name": "Comment", "value": "", "unit": "", "dtype": "text"}
+		],	
+
+	"Setup/HardwareProperties/DataAcquisition1": [
+		{"name": "Manufacturer", "value": "National Instruments", "unit": "", "dtype": "string"},
+		{"name": "Model", "value": "PCI-6071E", "unit": "", "dtype": "string"},
+		{"name": "SerialNo", "value": "0xCC39D9", "unit": "", "dtype": "string"},
+		{"name": "AIResolution", "value": 12, "unit": "bits", "dtype": "int"},
+		{"name": "AIMaxSampleRate", "value": 1250000, "unit": "Hz", "dtype": "float"},
+		{"name": "AIChannelCount", "value": 64, "unit": "", "dtype": "int"},
+		{"name": "DIOLineCount", "value": 8, "unit": "", "dtype": "int"},
+		{"name": "Description", "value": "This A/D board has 64 analog inputs. A board is set in a PC with matlab data acquisition toolbox and controlled through matlab.", "unit": "", "dtype": "text"},
+		{"name": "Website", "value": "http://sine.ni.com/nips/cds/view/p/lang/en/nid/1042", "unit": "", "dtype": "URL"},
+		{"name": "Owner", "value": "Hiroshi Tamura", "unit": "", "dtype": "person"},
+		{"name": "Comment", "value": "", "unit": "", "dtype": "text"}
+		],
+	
+	"Setup/HardwareProperties/DataAcquisition2": [
+		{"name": "Manufacturer", "value": "National Instruments", "unit": "", "dtype": "string"},
+		{"name": "Model", "value": "PCI-6071E", "unit": "", "dtype": "string"},
+		{"name": "SerialNo", "value": "0x13F2CDA", "unit": "", "dtype": "string"},
+		{"name": "AIResolution", "value": 12, "unit": "bits", "dtype": "int"},
+		{"name": "AIMaxSampleRate", "value": 1250000, "unit": "Hz", "dtype": "float"},
+		{"name": "AIChannelCount", "value": 64, "unit": "", "dtype": "int"},
+		{"name": "DIOLineCount", "value": 8, "unit": "", "dtype": "int"},
+		{"name": "Description", "value": "This A/D board has 64 analog inputs. A board is set in a PC with matlab data acquisition toolbox and controlled through matlab.", "unit": "", "dtype": "text"},
+		{"name": "Website", "value": "http://sine.ni.com/nips/cds/view/p/lang/en/nid/1042", "unit": "", "dtype": "URL"},
+		{"name": "Owner", "value": "Hiroshi Tamura", "unit": "", "dtype": "person"},
+		{"name": "Comment", "value": "", "unit": "", "dtype": "text"}
+		],
+	
+	"Setup/HardwareProperties/DataAcquisition3": [
+		{"name": "Manufacturer", "value": "National Instruments", "unit": "", "dtype": "string"},
+		{"name": "Model", "value": "PCI-6071E", "unit": "", "dtype": "string"},
+		{"name": "SerialNo", "value": "0xB7A337", "unit": "", "dtype": "string"},
+		{"name": "AIResolution", "value": 12, "unit": "bits", "dtype": "int"},
+		{"name": "AIMaxSampleRate", "value": 1250000, "unit": "Hz", "dtype": "float"},
+		{"name": "AIChannelCount", "value": 64, "unit": "", "dtype": "int"},
+		{"name": "DIOLineCount", "value": 8, "unit": "", "dtype": "int"},
+		{"name": "Description", "value": "This A/D board has 64 analog inputs. A board is set in a PC with matlab data acquisition toolbox and controlled through matlab.", "unit": "", "dtype": "text"},
+		{"name": "Website", "value": "http://sine.ni.com/nips/cds/view/p/lang/en/nid/1042", "unit": "", "dtype": "URL"},
+		{"name": "Owner", "value": "Hiroshi Tamura", "unit": "", "dtype": "person"},
+		{"name": "Comment", "value": "", "unit": "", "dtype": "text"}
+		],
+	
+	"Setup/HardwareProperties/Eyetracker1": [
+		{"name": "Manufacturer", "value": "ENZANSHI", "unit": "", "dtype": "string"},
+		{"name": "Model", "value": ["MEL-25UD (body)", "MEL-JB20 (coil)"], "unit": "", "dtype": "string"},
+		{"name": "SerialNo", "value": ["142-067 (body)", "142-067 (coil)"], "unit": "", "dtype": "string"},
+		{"name": "DetectorType", "value": "coil", "unit": "", "dtype": "string"},
+		{"name": "Fixation", "value": "head post", "unit": "", "dtype": "string"},
+		{"name": "Description", "value": "This search coil has 4 channels (left-horizontal, right-horizontal, left vertical, right vertical). For each channel, gain, offset, interaction is changeable.", "unit": "", "dtype": "text"},
+		{"name": "Owner", "value": "Hiroshi Tamura", "unit": "", "dtype": "person"},
+		{"name": "Comment", "value": "", "unit": "", "dtype": "text"}
+		],
+	
+	"Setup/HardwareProperties/Eyetracker2": [
+		{"name": "Manufacturer", "value": "PointGray Research", "unit": "", "dtype": "string"},
+		{"name": "Model", "value": "FL3-U3-13Y3M", "unit": "", "dtype": "string"},
+		{"name": "SerialNo", "value": "13020699", "unit": "", "dtype": "string"},
+		{"name": "DetectorType", "value": "infrared CCD", "unit": "", "dtype": "string"},
+		{"name": "MaxSampleRate", "value": 492, "unit": "Hz", "dtype": "int"},
+		{"name": "MaxSpatialRes", "value": "1280 x 1024", "unit": "", "dtype": "string"},
+		{"name": "Fixation", "value": "head post", "unit": "", "dtype": "string"},
+		{"name": "Description", "value": "This USB3.0 camera is run by the i-rec system (software to calculate eye position and percentage of eye opening). i-rec system is created and maintained by Dr. Matsuda in AIST (national institute of advanced industrial science and technology). i-rec system includes software, camera, PC, d/a board.", "unit": "", "dtype": "text"},
+		{"name": "Website", "value": "http://ww2.ptgrey.com/USB3/Flea3", "unit": "", "dtype": "URL"},
+		{"name": "Owner", "value": "Hiroshi Tamura", "unit": "", "dtype": "person"},
+		{"name": "Comment", "value": "", "unit": "", "dtype": "text"}
+		],
+	
+	"Setup/HardwareProperties/ImageAcquisition": [
+		{"name": "Manufacturer", "value": "Hanwha Japan", "unit": "", "dtype": "string"},
+		{"name": "Model", "value": "DC-NCR13U", "unit": "", "dtype": "string"},
+		{"name": "SerialNo", "value": "110604792", "unit": "", "dtype": "string"},
+		{"name": "Type", "value": "USB 2.0 digital camera", "unit": "", "dtype": "string"},
+		{"name": "MaxFramerate", "value": 30, "unit": "FPS", "dtype": "int"},
+		{"name": "MaxSpatialRes", "value": "1280 x 1024", "unit": "", "dtype": "string"},
+		{"name": "Description", "value": "This is an infrared web camera, used to take video image of animal face during recording.", "unit": "", "dtype": "text"},
+		{"name": "Owner", "value": "Hiroshi Tamura", "unit": "", "dtype": "person"},
+		{"name": "Comment", "value": "", "unit": "", "dtype": "text"}
+		],
+	
+	"Setup/HardwareProperties/Monitor": [
+		{"name": "Manufacturer", "value": "EIZO", "unit": "", "dtype": "string"},
+		{"name": "Model", "value": "EV2736W-FS", "unit": "", "dtype": "string"},
+		{"name": "SerialNo", "value": "", "unit": "", "dtype": "string"},
+		{"name": "Type", "value": "LCD(IPS) monitor", "unit": "", "dtype": "string"},
+		{"name": "MaxResolution", "value": "2560x1440", "unit": "pixel", "dtype": "string"},
+		{"name": "Pitch", "value": "0.233x0.233", "unit": "mm", "dtype": "string"},
+		{"name": "DisplayAreaSize", "value": "59.67x33.56", "unit": "cm", "dtype": "string"},
+		{"name": "Description", "value": "This is the monitor for stimulus presentation", "unit": "", "dtype": "text"},
+		{"name": "Owner", "value": "Hiroshi Tamura", "unit": "", "dtype": "person"},
+		{"name": "Comment", "value": "", "unit": "", "dtype": "text"}
+		],
+
+	"Setup/Electrode1": [
+        {"name": "Manufacturer", "value": "", "unit": "", "dtype": "string"},
+        {"name": "Model", "value": "", "unit": "", "dtype": "string"},
+        {"name": "SerialNo", "value": "", "unit": "", "dtype": "string"},
+        {"name": "Type", "value": "", "unit": "", "dtype": "string"},
+        {"name": "ProbeCount", "value": 0, "unit": "", "dtype": "int"},
+        {"name": "ProbeInterval", "value": 0, "unit": "um", "dtype": "float"},
+        {"name": "ProbeSize", "value": 0, "unit": "um", "dtype": "float"},
+        {"name": "Material", "value": "", "unit": "", "dtype": "string"},
+        {"name": "Lot", "value": "", "unit": "", "dtype": "string"},
+        {"name": "Impedance", "value": 0, "unit": "Mohm", "dtype": "float"},
+        {"name": "PenetrationCount", "value": 0, "unit": "", "dtype": "int"},
+        {"name": "RecordingSite", "value": "", "unit": "", "dtype": "string"},
+        {"name": "RecordingHemisphere", "value": "", "unit": "", "dtype": "string"},
+        {"name": "APRecordingPosition", "value": 0, "unit": "mm", "dtype": "float"},
+        {"name": "DVRecordingPosition", "value": 0, "unit": "mm", "dtype": "float"},
+        {"name": "MLRecordingPosition", "value": 0, "unit": "mm", "dtype": "float"},
+        {"name": "Depth", "value": 0, "unit": "um", "dtype": "float"},
+        {"name": "Condition", "value": "", "unit": "", "dtype": "text"},
+        {"name": "Comment", "value": "", "unit": "", "dtype": "text"}
+		],
+		
+	"Setup/Electrode2": [
+        {"name": "Manufacturer", "value": "", "unit": "", "dtype": "string"},
+        {"name": "Model", "value": "", "unit": "", "dtype": "string"},
+        {"name": "SerialNo", "value": "", "unit": "", "dtype": "string"},
+        {"name": "Type", "value": "", "unit": "", "dtype": "string"},
+        {"name": "ProbeCount", "value": 0, "unit": "", "dtype": "int"},
+        {"name": "ProbeInterval", "value": 0, "unit": "um", "dtype": "float"},
+        {"name": "ProbeSize", "value": 0, "unit": "um", "dtype": "float"},
+        {"name": "Material", "value": "", "unit": "", "dtype": "string"},
+        {"name": "Lot", "value": "", "unit": "", "dtype": "string"},
+        {"name": "Impedance", "value": 0, "unit": "Mohm", "dtype": "float"},
+        {"name": "PenetrationCount", "value": 0, "unit": "", "dtype": "int"},
+        {"name": "RecordingSite", "value": "", "unit": "", "dtype": "string"},
+        {"name": "RecordingHemisphere", "value": "", "unit": "", "dtype": "string"},
+        {"name": "APRecordingPosition", "value": 0, "unit": "mm", "dtype": "float"},
+        {"name": "DVRecordingPosition", "value": 0, "unit": "mm", "dtype": "float"},
+        {"name": "MLRecordingPosition", "value": 0, "unit": "mm", "dtype": "float"},
+        {"name": "Depth", "value": 0, "unit": "um", "dtype": "float"},
+        {"name": "Condition", "value": "", "unit": "", "dtype": "text"},
+        {"name": "Comment", "value": "", "unit": "", "dtype": "text"}
+		],
+		
+		
+	"Experiment": [
+		{"name": "Type", "value": "electrophysiology", "unit": "", "dtype": "string"},
+		{"name": "ProjectName", "value": "Active Vision", "unit": "", "dtype": "string"},
+		{"name": "Comment", "value": "", "unit": "", "dtype": "text"}
+		],
+	
+	"Experiment/Behavior": [
+		{"name": "Environment", "value": "", "unit": "", "dtype": "string"},
+		{"name": "Comment", "value": "", "unit": "", "dtype": "text"}
+		],
+        
+	"Experiment/Behavior/Task1@task1": [
+		{"name": "Paradigm", "value": "visual fixation", "unit": "", "dtype": "string"},
+		{"name": "Protocol", "value": "Monkey is presented with various stimuli while fixating at the central fixation spot.", "unit": "", "dtype": "text"},
+		{"name": "EventID", "value": [101, 102, 103, 104, 105, 110, -101, -102], "unit": "", "dtype": "int" },
+		{"name": "EventType", "value": ["start trial (fix pt on)", "eye in", "completed fixation", "juice delivery", "trial end", "fix pt off", "no eye in event", "fail to keep in the fix window"], "unit": "", "dtype": "string"}
+		],
+	
+	"Experiment/Behavior/Task2@task2": [
+		{"name": "Paradigm", "value": "eye calibration", "unit": "", "dtype": "string"},
+		{"name": "Protocol", "value": "Monkey fixates at calibration points presented in various positions.", "unit": "", "dtype": "text"},
+		{"name": "EventID", "value": [201, 202, 203, 204, 205, 210, -201, -202], "unit": "", "dtype": "int"}, 
+		{"name": "EventType", "value": ["start trial (fix pt on)", "eye in", "completed fixation", "juice delivery", "trial end", "fix pt off", "no eye in event", "fail to keep in the fix window"], "unit": "", "dtype": "string"} 
+		],
+		
+	"Experiment/Behavior/Task3@task3": [
+		{"name": "Paradigm", "value": "free viewing", "unit": "", "dtype": "string"},
+		{"name": "Protocol", "value": "Monkey freely views natural scene images", "unit": "", "dtype": "text"},
+		{"name": "EventID", "value": [301, 302, 303, 304, 305, 306, 310, 311, 312, -301, -302, -303], "unit": "", "dtype": "int"},
+		{"name": "EventType", "value": ["start trial (fix pt on)", "eye in", "completed fixation", "completed FV image viewing", "juice delivery", "trial end", "fix pt off", "image1 (scene) on", "image1 (scene) off", "no eye in event", "fail to keep in the fix window", "fail to keep in the FV image"], "unit": "", "dtype": "string"}
+		],
+		
+	"Experiment/Behavior/Task4@task4": [
+		{"name": "Paradigm", "value": "search", "unit": "", "dtype": "string"},
+		{"name": "Protocol", "value": "Monkey searches for objects embedded in natural scene images", "unit": "", "dtype": "text"},
+		{"name": "EventID", "value": [401, 402, 403, 404, 405, 406, 407, 408, 410, 411, 412, 413, 414, -401, -402, -403, -404, -405, -406, -407, -408], "unit": "", "dtype": "int"},
+		{"name": "EventType", "value": ["start trial (fix pt on)", "eye in", "completed fixation", "completed FV image viewing", "juice delivery", "completed the answer", "juice delivery", "trial end", "fix pt off", "image1 (scene) on", "image1 (scene) off", "image2 (object) on", "image2 (object) off", "no eye in event", "fail to keep in the fix window", "fail to keep in the FV image", "lever was pressed but the eye was not in the window", "eye got off from the screen", "time up (no lever press)", "fail to keep the lever", "fail to keep the eye on the target"], "unit": "", "dtype": "string"} 
+		],
+		
+	"Experiment/Behavior/Task5@task5": [
+		{"name": "Paradigm", "value": "memory", "unit": "", "dtype": "string"},
+		{"name": "Protocol", "value": "Monkey memorizes objects embedded in natural scene images", "unit": "", "dtype": "text"},
+		{"name": "EventID", "value": [501, 502, 503, 504, 505, 506, 507, 508, 510, 511, 512, 513, 514, -501, -502, -503, -504, -505], "unit": "", "dtype": "int"},
+		{"name": "EventType", "value": ["start trial (fix pt on)", "eye in", "completed fixation", "completed FV image viewing", "correct answer by lever press", "corrct answer by not leve press", "juice delivery", "trial end", "fix pt off", "image1 (scene) on", "image1 (scene) off", "image2 (object) on", "image2 (object) off", "no eye in event", "fail to keep in the fix window", "fail to keep in the FV image", "false alarm by lever press", "false answer by not lever press"], "unit": "", "dtype": "string"}
+		],
+		
+	"Experiment/Electrophysiology": [
+		{"name": "Type", "value": "extracellular recording", "unit": "", "dtype": "string"},
+		{"name": "Subtype", "value": "multi electrode recording", "unit": "", "dtype": "string"},
+		{"name": "RecordingType", "value": "chronic", "unit": "", "dtype": "string"},
+		{"name": "SubjectState", "value": "awake", "unit": "", "dtype": "string"},
+		{"name": "Comment", "value": "", "unit": "", "dtype": "text"}
+		],
+
+	"Recording": [
+		{"name": "Experimenter", "value": "Masamitsu Mukai", "unit": "", "dtype": "person"},
+		{"name": "Comment", "value": "", "unit": "", "dtype": "text"}
+		],
+		
+	"Recording/HardwareSettings": [
+		{"name": "Comment", "value": "", "unit": "", "dtype": "text"}
+		],
+	
+	"Recording/HardwareSettings/HeadStage1": [
+		{"name": "Comment", "value": "", "unit": "", "dtype": "text"}
+		],
+	
+	"Recording/HardwareSettings/HeadStage2": [
+		{"name": "Comment", "value": "", "unit": "", "dtype": "text"}
+		],
+	
+	"Recording/HardwareSettings/Amplifier": [
+		{"name": "Comment", "value": "", "unit": "", "dtype": "text"}
+		],
+	"Recording/HardwareSettings/DataAcquisition1": [
+		{"name": "AIUsedChannelCount", "value": 0, "unit": "", "dtype": "int"},
+		{"name": "AIChannelGain", "value": 1, "unit": "", "dtype": "float"},
+		{"name": "AIReference", "value": "", "unit": "", "dtype": "string"},
+		{"name": "AIPolarity", "value": "normal", "unit": "", "dtype": "string"},
+		{"name": "Comment", "value": "", "unit": "", "dtype": "text"}
+		],
+	
+	"Recording/HardwareSettings/DataAcquisition2": [
+		{"name": "AIUsedChannelCount", "value": 0, "unit": "", "dtype": "int"},
+		{"name": "AIChannelGain", "value": 1, "unit": "", "dtype": "float"},
+		{"name": "AIReference", "value": "", "unit": "", "dtype": "string"},
+		{"name": "AIPolarity", "value": "normal", "unit": "", "dtype": "string"},
+		{"name": "Comment", "value": "", "unit": "", "dtype": "text"}
+		],
+	
+	"Recording/HardwareSettings/DataAcquisition3": [
+		{"name": "AIUsedChannelCount", "value": 0, "unit": "", "dtype": "int"},
+		{"name": "AIChannelGain", "value": 1, "unit": "", "dtype": "float"},
+		{"name": "AIReference", "value": "", "unit": "", "dtype": "string"},
+		{"name": "AIPolarity", "value": "normal", "unit": "", "dtype": "string"},
+		{"name": "Comment", "value": "", "unit": "", "dtype": "text"}
+		],
+	
+	"Recording/HardwareSettings/Eyetracker1": [
+        {"name": "Side", "value": "?", "unit": "", "dtype": "string"},
+        {"name": "VerticalGain", "value": 0, "unit": "", "dtype": "float"},
+        {"name": "VerticalOffset", "value": 0, "unit": "", "dtype": "float"},
+        {"name": "VerticalCrossTalk", "value": 0, "unit": "", "dtype": "float"},
+        {"name": "VerticalPolarity", "value": "?", "unit": "", "dtype": "string"},				
+        {"name": "HorizontalGain", "value": 0, "unit": "", "dtype": "float"},
+        {"name": "HorizontalOffset", "value": 0, "unit": "", "dtype": "float"},
+        {"name": "HorizontalCrossTalk", "value": 0, "unit": "", "dtype": "float"},
+        {"name": "HorizontalPolarity", "value": "?", "unit": "", "dtype": "string"},				
+        {"name": "Comment", "value": "", "unit": "", "dtype": "text"}
+		],
+	
+	"Recording/HardwareSettings/Eyetracker2": [
+		{"name": "SampleRate", "value": 492, "unit": "Hz", "dtype": "float"},
+		{"name": "Comment", "value": "", "unit": "", "dtype": "text"}
+		],
+	
+	"Recording/HardwareSettings/ImageAcquisition": [
+		{"name": "Framerate", "value": 30, "unit": "FPS", "dtype": "int"},
+		{"name": "SpatialRes", "value": "320 x 240", "unit": "", "dtype": "string"},
+		{"name": "Comment", "value": "", "unit": "", "dtype": "text"}
+		],
+		
+	"Recording/HardwareSettings/Monitor": [
+		{"name": "Resolution", "value": "2560x1440", "unit": "", "dtype": "text"},
+        {"name": "PixelPerDegree", "value": 42.9, "unit": "pixel/deg", "dtype": "float"},
+        {"name": "RefreshRate", "value": 60, "unit": "Hz", "dtype": "int"},
+        {"name": "Gamma", "value": 2.2054, "unit": "", "dtype": "float"},
+        {"name": "MaxLuminance", "value": 270.3838, "unit": "cd/m2", "dtype": "float"},
+        {"name": "MinimumLuminance", "value": 2.2054, "unit": "cd/m2", "dtype": "float"},
+        {"name": "Distance", "value": 570, "unit": "mm", "dtype": "float"},
+		{"name": "Comment", "value": "", "unit": "", "dtype": "text"}
+		],
+		
+	"Dataset": [
+		{"name": "Comment", "value": "", "unit": "", "dtype": "text"}
+		],
+		
+	"Dataset/AnalogData1": [
+		{"name": "Comment", "value": "", "unit": "", "dtype": "text"}
+		],
+	
+	"Dataset/AnalogData2": [
+		{"name": "Comment", "value": "", "unit": "", "dtype": "text"}
+		],
+	
+	"Dataset/AnalogData3": [
+		{"name": "Comment", "value": "", "unit": "", "dtype": "text"}
+		],
+	
+	"Dataset/AnalogData3/CalibParams": [
+		{"name": "Comment", "value": "", "unit": "", "dtype": "text"}
+		],
+	
+	"Dataset/EventData": [
+		{"name": "Comment", "value": "", "unit": "", "dtype": "text"}
+		],
+        
+	"Dataset/StimulusData": [
+		{"name": "Comment", "value": "", "unit": "", "dtype": "text"}
+		],
+	
+	"Dataset/VideoData": [
+		{"name": "Comment", "value": "", "unit": "", "dtype": "text"}
+		]
+}

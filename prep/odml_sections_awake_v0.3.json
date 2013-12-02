@@ -1,0 +1,199 @@
+{
+	"Subject": {
+		"name": "Subject", "type": "subject"
+		},
+	
+	"Setup": {
+		"name": "Setup", "type": "setup",
+		"subsections": ["HardwareProperties", "Electrode1", "Electrode2"]
+        },
+    
+    "Setup/HardwareProperties": {
+		"name": "HardwareProperties", "type": "collection/hardware_properties",
+		"subsections":["HeadStage1", "HeadStage2", "Amplifier1",  "Amplifier2", "Amplifier3","Amplifier4","DataAcquisition1", "DataAcquisition2", "DataAcquisition3", "Eyetracker1", "Eyetracker2", "ImageAcquisition", "Monitor"]
+		},
+	
+	"Setup/HardwareProperties/HeadStage1": {
+		"name": "HeadStage1", "type": "hardware/amplifier"
+		},
+	
+	"Setup/HardwareProperties/HeadStage2": {
+		"name": "HeadStage2", "type": "hardware/amplifier"
+		},
+	
+	"Setup/HardwareProperties/Amplifier1": {
+		"name": "Amplifier", "type": "hardware/amplifier"
+		},
+	
+	"Setup/HardwareProperties/Amplifier2": {
+		"name": "Amplifier", "type": "hardware/amplifier"
+		},
+
+	
+	"Setup/HardwareProperties/Amplifier3": {
+		"name": "Amplifier", "type": "hardware/amplifier"
+		},
+	
+	"Setup/HardwareProperties/Amplifier4": {
+		"name": "Amplifier", "type": "hardware/amplifier"
+		},
+
+		
+	"Setup/HardwareProperties/DataAcquisition1": {
+		"name": "DataAcquisition1", "type": "hardware/daq"
+		},
+		
+	"Setup/HardwareProperties/DataAcquisition2": {
+		"name": "DataAcquisition2", "type": "hardware/daq"
+		},
+		
+	"Setup/HardwareProperties/DataAcquisition3": {
+		"name": "DataAcquisition3", "type": "hardware/daq"
+		},
+		
+	"Setup/HardwareProperties/Eyetracker1": {
+		"name": "Eyetracker1", "type": "hardware/eyetracker"
+		},
+	
+	"Setup/HardwareProperties/Eyetracker2": {
+		"name": "Eyetracker2", "type": "hardware/eyetracker"
+		},
+	
+	"Setup/HardwareProperties/ImageAcquisition": {
+		"name": "ImageAcquisition", "type": "hardware/iaq"
+		},
+	
+	"Setup/HardwareProperties/Monitor": {
+		"name": "Monitor", "type": "hardware/monitor"
+		},
+	
+	"Setup/Electrode1": {
+		"name": "Electrode1", "type": "electrode"
+		},
+
+	"Setup/Electrode2": {
+		"name": "Electrode2", "type": "electrode"
+		},
+
+    "Experiment": {
+    	"name": "Experiment", "type": "experiment",
+		"subsections":["Behavior", "Electrophysiology"]
+		},
+	
+	"Experiment/Behavior": {
+		"name": "Behavior", "type": "experiment/behavior",
+		"subsections":["Task1", "Task2", "Task3", "Task4", "Task5"]
+		},
+		
+	"Experiment/Behavior/Task1": {
+		"name": "Task1", "type": "task"
+		},
+		
+	"Experiment/Behavior/Task2": {
+		"name": "Task2", "type": "task"
+		},
+		
+	"Experiment/Behavior/Task3": {
+		"name": "Task3", "type": "task"
+		},
+		
+	"Experiment/Behavior/Task4": {
+		"name": "Task3", "type": "task"
+		},
+		
+	"Experiment/Behavior/Task5": {
+		"name": "Task3", "type": "task"
+		},
+		
+	"Experiment/Electrophysiology": {
+		"name": "Electrophysiology", "type": "experiment/electrophysiology"
+        },
+   
+    "Recording": {
+    	"name": "Recording", "type": "recording",
+		"subsections": ["HardwareSettings"]
+        },
+    
+    "Recording/HardwareSettings": {
+       	"name": "HardwareSettings", "type": "collection/hardware_settings",
+		"subsections":["HeadStage1", "HeadStage2", "Amplifier", "DataAcquisition1", "DataAcquisition2", "DataAcquisition3", "Eyetracker1", "Eyetracker2", "ImageAcquisition", "Monitor"]
+		},
+		
+	"Recording/HardwareSettings/HeadStage1": {
+		"name": "HeadStage1", "type": "hardware/amplifier"
+		},
+	
+	"Recording/HardwareSettings/HeadStage2": {
+		"name": "HeadStage2", "type": "hardware/amplifier"
+		},
+	
+	"Recording/HardwareSettings/Amplifier": {
+		"name": "Amplifier", "type": "hardware/amplifier"
+		},
+		
+	"Recording/HardwareSettings/DataAcquisition1": {
+		"name": "DataAcquisition1", "type": "hardware/daq"
+		},
+		
+	"Recording/HardwareSettings/DataAcquisition2": {
+		"name": "DataAcquisition2", "type": "hardware/daq"
+		},
+		
+	"Recording/HardwareSettings/DataAcquisition3": {
+		"name": "DataAcquisition3", "type": "hardware/daq"
+		},
+		
+	"Recording/HardwareSettings/Eyetracker1": {
+		"name": "Eyetracker1", "type": "hardware/eyetracker"
+		},
+	
+	"Recording/HardwareSettings/Eyetracker2": {
+		"name": "Eyetracker2", "type": "hardware/eyetracker"
+		},
+	
+	"Recording/HardwareSettings/ImageAcquisition": {
+		"name": "ImageAcquisition", "type": "hardware/iaq"
+		},
+		
+	"Recording/HardwareSettings/Monitor": {
+		"name": "Monitor", "type": "hardware/monitor"
+		},
+   
+    "Dataset": {
+    	"name": "Dataset", "type": "dataset",
+		"subsections":["AnalogData1", "AnalogData2", "AnalogData3", "EventData", "StimulusData", "VideoData"]
+		},
+	
+	"Dataset/AnalogData1": {
+		"name": "AnalogData1", "type": "dataset/neural_data"
+		},
+	
+	"Dataset/AnalogData2": {
+		"name": "AnalogData2", "type": "dataset/neural_data"
+		},
+	
+	"Dataset/AnalogData3": {
+		"name": "AnalogData1", "type": "dataset/behavioral_data",
+		"subsections": ["CalibParams", "EyevexParams"]
+		},
+	
+	"Dataset/AnalogData3/CalibParams": {
+		"name": "CalibParams", "type": "eye_calibration"
+		},
+	
+	"Dataset/AnalogData3/EyevexParams": {
+		"name": "EyevexParams", "type": "eye_event_extraction"
+		},
+	
+	"Dataset/EventData": {
+		"name": "EventData", "type": "dataset/event_data"
+		},
+	
+	"Dataset/StimulusData": {
+		"name": "StimulusData", "type": "dataset/stimulus_data"
+		},
+	
+	"Dataset/VideoData": {
+		"name": "VideoData", "type": "dataset/video_data"
+		}
+}
