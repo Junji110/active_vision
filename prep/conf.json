@@ -3,7 +3,7 @@
 	"stimdir": "C:/Users/ito/datasets/osaka/stimuli",
 	
 	"odml_av":{
-		"template_dir": "C:/Users/ito/toolbox/active_vision/prep"
+		"template_dir": "C:/Users/ito/toolbox/active_vision/prep/lvd_version_odml"
 		},
 		
 	"eyecalib":{
@@ -14,6 +14,26 @@
 	"eyevex_gui":{
 		"on_event": "image1 (scene) on",
 		"off_event": "image1 (scene) off",
+		"eex_param":{
+			"smooth_width": 0.002,
+			"sacamp_threshold": 0.1,
+			"sacvelo_threshold": 30.0,
+			"sacvelo_peak_min": 50.0,
+			"sacvelo_peak_max": 1000.0,
+			"sacaccl_peak_min": 8000.0,
+			"sacaccl_peak_max": 100000.0,
+			"sacdur_min": 0.005,
+			"sacdur_max": 1.0,
+			"fixvelo_threshold": 70.0,
+			"fixshift_threshold": 1.0,
+			"fixdur_min": 0.1,
+			"fixdur_max": 1.0
+			}
+		},
+		
+	"eyevex_gui2":{
+		"on_event": 311,
+		"off_event": 312,
 		"eex_param":{
 			"smooth_width": 0.002,
 			"sacamp_threshold": 0.1,
