@@ -215,8 +215,14 @@ def find_filenames(datadir, session, rec, filetype):
     
     return fn_found
 
+def genfromtxt_converters():
+    convfunc = lambda x: long(x)
+    return {'INTERVAL': convfunc, 'TIMING_CLOCK': convfunc, 'GL_TIMER_VAL': convfunc}
+    
 def get_eyecalib_trialinfo(filename, blk=-1, fix_off_id=210):
-    data = np.genfromtxt(filename, skip_header=1, delimiter=',', names=True, dtype=None)
+    convfunc = lambda x: long(x)
+    converters = {'INTERVAL': convfunc, 'TIMING_CLOCK': convfunc, 'GL_TIMER_VAL': convfunc}
+    data = np.genfromtxt(filename, skip_header=1, delimiter=',', names=True, dtype=None, converters=converters)
     
     if 2 not in data['g_task_switch']:
         raise ValueError("No eye calibration trials in the specified recording.")
