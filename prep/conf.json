@@ -1,16 +1,16 @@
 {
 	"datadir": "C:/Users/ito/datasets/osaka/behavior",
 	"stimdir": "C:/Users/ito/datasets/osaka/stimuli",
-	
+
 	"odml_av":{
-		"template_dir": "C:/Users/ito/toolbox/active_vision/prep/lvd_version_odml"
+		"template_dir": "C:/Users/ito/toolbox/active_vision/prep"
 		},
-		
+
 	"eyecalib":{
 		"method": "polynomial_fit",
 		"method_param": 2.0
 		},
-	
+
 	"eyevex_gui":{
 		"on_event": "image1 (scene) on",
 		"off_event": "image1 (scene) off",
@@ -30,7 +30,7 @@
 			"fixdur_max": 1.0
 			}
 		},
-		
+
 	"eyevex_gui2":{
 		"on_event": 311,
 		"off_event": 312,

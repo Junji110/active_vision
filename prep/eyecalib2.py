@@ -215,10 +215,6 @@ def find_filenames(datadir, session, rec, filetype):
     
     return fn_found
 
-def genfromtxt_converters():
-    convfunc = lambda x: long(x)
-    return {'INTERVAL': convfunc, 'TIMING_CLOCK': convfunc, 'GL_TIMER_VAL': convfunc}
-    
 def get_eyecalib_trialinfo(filename, blk=-1, fix_off_id=210):
     convfunc = lambda x: long(x)
     converters = {'INTERVAL': convfunc, 'TIMING_CLOCK': convfunc, 'GL_TIMER_VAL': convfunc}
