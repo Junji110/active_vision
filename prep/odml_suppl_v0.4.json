@@ -1,0 +1,52 @@
+{
+	"Author": "Junji Ito",
+	"Co-Author": "Richard Meyes",
+	
+	"Version": "0.4",
+	
+	"/Subject": [
+		{"_type": "Property", "name": "TrivialName", "value": "Hime", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "Weight", "value": 6.4, "unit": "kg", "dtype": "float"},
+		{"_type": "Property", "name": "HealthStatus", "value": "good", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "Comment", "value": "-", "unit": "", "dtype": "string"}
+		],
+
+	"/Recording/HardwareSettings/Eyetracker1": [
+      	{"_type": "Property", "name": "Side", "value": "left", "unit": "", "dtype": "string"},
+        {"_type": "Property", "name": "VerticalGain", "value": 9.18, "unit": "", "dtype": "float"},
+        {"_type": "Property", "name": "VerticalOffset", "value": 5.22, "unit": "", "dtype": "float"},
+        {"_type": "Property", "name": "VerticalCrossTalk", "value": 9.00, "unit": "", "dtype": "float"},
+        {"_type": "Property", "name": "VerticalPolarity", "value": "minus", "unit": "", "dtype": "string"},				
+        {"_type": "Property", "name": "HorizontalGain", "value": 5.47, "unit": "", "dtype": "float"},
+        {"_type": "Property", "name": "HorizontalOffset", "value": 5.36, "unit": "", "dtype": "float"},
+        {"_type": "Property", "name": "HorizontalCrossTalk", "value": 6.57, "unit": "", "dtype": "float"},
+        {"_type": "Property", "name": "HorizontalPolarity", "value": "plus", "unit": "", "dtype": "string"},				
+        {"_type": "Property", "name": "Comment", "value": "-", "unit": "", "dtype": "text"}
+        ],
+
+	"/Experiment/Behavior": [
+		{"_type": "Property", "name":  "Environment", "value": "bright room", "unit": "", "dtype": "string"},
+    	{"_type": "Property", "name":  "Comment", "value": "-", "unit": "", "dtype": "text"}
+        ],
+
+	"Setup":[
+		{"_type": "Property", "name":  "Comment", "value": "-", "unit": "", "dtype": "string"}
+		],
+		
+	"/Setup/Electrode1": [
+		{"_type": "Property", "name":  "Condition", "value": "-", "unit": "", "dtype": "text"}
+		],
+		
+	"/Setup/Electrode2": [
+		{"_type": "Property", "name":  "Condition", "value": "-", "unit": "", "dtype": "text"}
+		],
+		
+	"/Experiment": [
+		{"_type": "Property", "name":  "Comment", "value": "-", "unit": "", "dtype": "string"}
+		],
+		
+	"/Recording": [
+		{"_type": "Property", "name":  "Experimenter", "value": "-", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name":  "Comment", "value": "-", "unit": "", "dtype": "string"}
+		]
+}

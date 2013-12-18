@@ -1,0 +1,412 @@
+{		 
+	"/Subject": [
+		{"_type": "Property", "name": "TrivialName", "value": "Hime", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "Species", "value": "Macaca Fuscata", "unit": "", "dtype": "string"},
+	 	{"_type": "Property", "name": "Gender", "value": "female", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "Birthday", "value": "2007-07-29", "unit": "", "dtype": "date"},
+	  	{"_type": "Property", "name": "ContactInformation", "value": "Yukako Yamane (yukako@bpe.es.osaka-u.ac.jp)", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "Weight", "value": 0.0, "unit": "kg", "dtype": "float"},
+		{"_type": "Property", "name": "HealthStatus", "value": "-", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "Comment", "value": "-", "unit": "", "dtype": "string"}
+		],
+	
+	"/Setup": [
+		{"_type": "Property", "name": "Location", "value": "4A4-5", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "Creator", "value": "Yukako Yamane", "unit": "", "dtype": "person"},
+		{"_type": "Property", "name": "Maintainer", "value": "Yukako Yamane", "unit": "", "dtype": "person"},
+		{"_type": "Property", "name": "Description", "value": "Awake experiment setup in Suita Campus", "unit": "", "dtype": "text"},
+		{"_type": "Property", "name": "Comment", "value": "-", "unit": "", "dtype": "text"}
+		],
+	
+	"/Setup/HardwareProperties": [
+		{"_type": "Property", "name": "Comment", "value": "-", "unit": "", "dtype": "text"}
+		],
+	
+	"/Setup/HardwareProperties/HeadStage1": [
+		{"_type": "Property", "name": "Manufacturer", "value": "Plexon", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "Model", "value": "HST/32V-G20", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "SerialNo", "value": "HST1", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "Type", "value": "Head stage for high-impedance electrodes", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "Gain", "value": 20, "unit": "", "dtype": "int"},
+		{"_type": "Property", "name": "ChannelNumber", "value": 32, "unit": "", "dtype": "int"},
+		{"_type": "Property", "name": "Description", "value": "This head stage has 32 channels with fixed gain (x20).", "unit": "", "dtype": "text"},
+		{"_type": "Property", "name": "Website", "value": "http://www.plexon.com/products/headstages", "unit": "", "dtype": "URL"},
+		{"_type": "Property", "name": "Owner", "value": "Hiroshi Tamura", "unit": "", "dtype": "person"},
+		{"_type": "Property", "name": "Comment", "value": "-", "unit": "", "dtype": "text"}
+		],
+	
+	"/Setup/HardwareProperties/HeadStage2": [
+		{"_type": "Property", "name": "Manufacturer", "value": "Plexon", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "Model", "value": "HST/32V-G20", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "SerialNo", "value": "HST2", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "Type", "value": "Head stage for high-impedance electrodes", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "Gain", "value": 20, "unit": "", "dtype": "int"},
+		{"_type": "Property", "name": "ChannelNumber", "value": 32, "unit": "", "dtype": "int"},
+		{"_type": "Property", "name": "Description", "value": "This head stage has 32 channels with fixed gain (x20).", "unit": "", "dtype": "text"},
+		{"_type": "Property", "name": "Website", "value": "http://www.plexon.com/products/headstages", "unit": "", "dtype": "URL"},
+		{"_type": "Property", "name": "Owner", "value": "Hiroshi Tamura", "unit": "", "dtype": "person"},
+		{"_type": "Property", "name": "Comment", "value": "-", "unit": "", "dtype": "text"}
+		],
+
+	"/Setup/HardwareProperties/Amplifier1": [
+		{"_type": "Property", "name": "Manufacturer", "value": "Plexon", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "Model", "value": "PBX 2/64wb-G50", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "SerialNo", "value": "PRA-G-WB-04-003", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "Type", "value": "Preamplifier", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "Gain", "value": 50, "unit": "", "dtype": "int"},
+		{"_type": "Property", "name": "ChannelNumber", "value": 16, "unit": "", "dtype": "int"},
+		{"_type": "Property", "name": "HighpassCutoff", "value": 0.7, "unit": "Hz", "dtype": "float"},
+		{"_type": "Property", "name": "LowpassCutoff", "value": 8000, "unit": "Hz", "dtype": "float"},
+		{"_type": "Property", "name": "Description", "value": "This PBX Preamplifier is one of 4 wide band field potential boards, each of which accepts 16ch signals. Bandpass filter range (0.7-8000Hz) and the gain (x50) is fixed.", "unit": "", "dtype": "text"},
+		{"_type": "Property", "name": "Website", "value": "http://www.plexon.com/products/pbx-preamplifier", "unit": "", "dtype": "URL"},
+		{"_type": "Property", "name": "Owner", "value": "Hiroshi Tamura", "unit": "", "dtype": "person"},
+		{"_type": "Property", "name": "Comment", "value": "-", "unit": "", "dtype": "text"}
+		],
+
+	"/Setup/HardwareProperties/Amplifier2": [
+		{"_type": "Property", "name": "Manufacturer", "value": "Plexon", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "Model", "value": "PBX 2/64wb-G50", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "SerialNo", "value": "PRA-G-WB-04-004", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "Type", "value": "Preamplifier", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "Gain", "value": 50, "unit": "", "dtype": "int"},
+		{"_type": "Property", "name": "ChannelNumber", "value": 16, "unit": "", "dtype": "int"},
+		{"_type": "Property", "name": "HighpassCutoff", "value": 0.7, "unit": "Hz", "dtype": "float"},
+		{"_type": "Property", "name": "LowpassCutoff", "value": 8000, "unit": "Hz", "dtype": "float"},
+		{"_type": "Property", "name": "Description", "value": "This PBX Preamplifier is one of 4 wide band field potential boards, each of which accepts 16ch signals. Bandpass filter range (0.7-8000Hz) and the gain (x50) is fixed.", "unit": "", "dtype": "text"},
+		{"_type": "Property", "name": "Website", "value": "http://www.plexon.com/products/pbx-preamplifier", "unit": "", "dtype": "URL"},
+		{"_type": "Property", "name": "Owner", "value": "Hiroshi Tamura", "unit": "", "dtype": "person"},
+		{"_type": "Property", "name": "Comment", "value": "-", "unit": "", "dtype": "text"}
+		],
+
+	"/Setup/HardwareProperties/Amplifier3": [
+		{"_type": "Property", "name": "Manufacturer", "value": "Plexon", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "Model", "value": "PBX 2/64wb-G50", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "SerialNo", "value": "PRA-G-WB-04-005", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "Type", "value": "Preamplifier", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "Gain", "value": 50, "unit": "", "dtype": "int"},
+		{"_type": "Property", "name": "ChannelNumber", "value": 16, "unit": "", "dtype": "int"},
+		{"_type": "Property", "name": "HighpassCutoff", "value": 0.7, "unit": "Hz", "dtype": "float"},
+		{"_type": "Property", "name": "LowpassCutoff", "value": 8000, "unit": "Hz", "dtype": "float"},
+		{"_type": "Property", "name": "Description", "value": "This PBX Preamplifier is one of 4 wide band field potential boards, each of which accepts 16ch signals. Bandpass filter range (0.7-8000Hz) and the gain (x50) is fixed.", "unit": "", "dtype": "text"},
+		{"_type": "Property", "name": "Website", "value": "http://www.plexon.com/products/pbx-preamplifier", "unit": "", "dtype": "URL"},
+		{"_type": "Property", "name": "Owner", "value": "Hiroshi Tamura", "unit": "", "dtype": "person"},
+		{"_type": "Property", "name": "Comment", "value": "-", "unit": "", "dtype": "text"}
+		],
+
+	"/Setup/HardwareProperties/Amplifier4": [
+		{"_type": "Property", "name": "Manufacturer", "value": "Plexon", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "Model", "value": "PBX 2/64wb-G50", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "SerialNo", "value": "PRA-G-WB-04-006", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "Type", "value": "Preamplifier", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "Gain", "value": 50, "unit": "", "dtype": "int"},
+		{"_type": "Property", "name": "ChannelNumber", "value": 16, "unit": "", "dtype": "int"},
+		{"_type": "Property", "name": "HighpassCutoff", "value": 0.7, "unit": "Hz", "dtype": "float"},
+		{"_type": "Property", "name": "LowpassCutoff", "value": 8000, "unit": "Hz", "dtype": "float"},
+		{"_type": "Property", "name": "Description", "value": "This PBX Preamplifier is one of 4 wide band field potential boards, each of which accepts 16ch signals. Bandpass filter range (0.7-8000Hz) and the gain (x50) is fixed.", "unit": "", "dtype": "text"},
+		{"_type": "Property", "name": "Website", "value": "http://www.plexon.com/products/pbx-preamplifier", "unit": "", "dtype": "URL"},
+		{"_type": "Property", "name": "Owner", "value": "Hiroshi Tamura", "unit": "", "dtype": "person"},
+		{"_type": "Property", "name": "Comment", "value": "-", "unit": "", "dtype": "text"}
+		],	
+
+	"/Setup/HardwareProperties/DataAcquisition1": [
+		{"_type": "Property", "name": "Manufacturer", "value": "National Instruments", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "Model", "value": "PCI-6071E", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "SerialNo", "value": "0xCC39D9", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "AIResolution", "value": 12, "unit": "bits", "dtype": "int"},
+		{"_type": "Property", "name": "AIMaxSampleRate", "value": 1250000, "unit": "Hz", "dtype": "float"},
+		{"_type": "Property", "name": "AIChannelCount", "value": 64, "unit": "", "dtype": "int"},
+		{"_type": "Property", "name": "DIOLineCount", "value": 8, "unit": "", "dtype": "int"},
+		{"_type": "Property", "name": "Description", "value": "This A/D board has 64 analog inputs. A board is set in a PC with matlab data acquisition toolbox and controlled through matlab.", "unit": "", "dtype": "text"},
+		{"_type": "Property", "name": "Website", "value": "http://sine.ni.com/nips/cds/view/p/lang/en/nid/1042", "unit": "", "dtype": "URL"},
+		{"_type": "Property", "name": "Owner", "value": "Hiroshi Tamura", "unit": "", "dtype": "person"},
+		{"_type": "Property", "name": "Comment", "value": "-", "unit": "", "dtype": "text"}
+		],
+	
+	"/Setup/HardwareProperties/DataAcquisition2": [
+		{"_type": "Property", "name": "Manufacturer", "value": "National Instruments", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "Model", "value": "PCI-6071E", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "SerialNo", "value": "0x13F2CDA", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "AIResolution", "value": 12, "unit": "bits", "dtype": "int"},
+		{"_type": "Property", "name": "AIMaxSampleRate", "value": 1250000, "unit": "Hz", "dtype": "float"},
+		{"_type": "Property", "name": "AIChannelCount", "value": 64, "unit": "", "dtype": "int"},
+		{"_type": "Property", "name": "DIOLineCount", "value": 8, "unit": "", "dtype": "int"},
+		{"_type": "Property", "name": "Description", "value": "This A/D board has 64 analog inputs. A board is set in a PC with matlab data acquisition toolbox and controlled through matlab.", "unit": "", "dtype": "text"},
+		{"_type": "Property", "name": "Website", "value": "http://sine.ni.com/nips/cds/view/p/lang/en/nid/1042", "unit": "", "dtype": "URL"},
+		{"_type": "Property", "name": "Owner", "value": "Hiroshi Tamura", "unit": "", "dtype": "person"},
+		{"_type": "Property", "name": "Comment", "value": "-", "unit": "", "dtype": "text"}
+		],
+	
+	"/Setup/HardwareProperties/DataAcquisition3": [
+		{"_type": "Property", "name": "Manufacturer", "value": "National Instruments", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "Model", "value": "PCI-6071E", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "SerialNo", "value": "0xB7A337", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "AIResolution", "value": 12, "unit": "bits", "dtype": "int"},
+		{"_type": "Property", "name": "AIMaxSampleRate", "value": 1250000, "unit": "Hz", "dtype": "float"},
+		{"_type": "Property", "name": "AIChannelCount", "value": 64, "unit": "", "dtype": "int"},
+		{"_type": "Property", "name": "DIOLineCount", "value": 8, "unit": "", "dtype": "int"},
+		{"_type": "Property", "name": "Description", "value": "This A/D board has 64 analog inputs. A board is set in a PC with matlab data acquisition toolbox and controlled through matlab.", "unit": "", "dtype": "text"},
+		{"_type": "Property", "name": "Website", "value": "http://sine.ni.com/nips/cds/view/p/lang/en/nid/1042", "unit": "", "dtype": "URL"},
+		{"_type": "Property", "name": "Owner", "value": "Hiroshi Tamura", "unit": "", "dtype": "person"},
+		{"_type": "Property", "name": "Comment", "value": "-", "unit": "", "dtype": "text"}
+		],
+	
+	"/Setup/HardwareProperties/Eyetracker1": [
+		{"_type": "Property", "name": "Manufacturer", "value": "ENZANSHI", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "Model", "value": ["MEL-25UD (body)", "MEL-JB20 (coil)"], "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "SerialNo", "value": ["142-067 (body)", "142-067 (coil)"], "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "DetectorType", "value": "coil", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "Fixation", "value": "head post", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "Description", "value": "This search coil has 4 channels (left-horizontal, right-horizontal, left vertical, right vertical). For each channel, gain, offset, interaction is changeable.", "unit": "", "dtype": "text"},
+		{"_type": "Property", "name": "Owner", "value": "Hiroshi Tamura", "unit": "", "dtype": "person"},
+		{"_type": "Property", "name": "Comment", "value": "-", "unit": "", "dtype": "text"}
+		],
+	
+	"/Setup/HardwareProperties/Eyetracker2": [
+		{"_type": "Property", "name": "Manufacturer", "value": "PointGray Research", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "Model", "value": "FL3-U3-13Y3M", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "SerialNo", "value": "13020699", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "DetectorType", "value": "infrared CCD", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "MaxSampleRate", "value": 492, "unit": "Hz", "dtype": "int"},
+		{"_type": "Property", "name": "MaxSpatialRes", "value": "1280 x 1024", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "Fixation", "value": "head post", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "Description", "value": "This USB3.0 camera is run by the i-rec system (software to calculate eye position and percentage of eye opening). i-rec system is created and maintained by Dr. Matsuda in AIST (national institute of advanced industrial science and technology). i-rec system includes software, camera, PC, d/a board.", "unit": "", "dtype": "text"},
+		{"_type": "Property", "name": "Website", "value": "http://ww2.ptgrey.com/USB3/Flea3", "unit": "", "dtype": "URL"},
+		{"_type": "Property", "name": "Owner", "value": "Hiroshi Tamura", "unit": "", "dtype": "person"},
+		{"_type": "Property", "name": "Comment", "value": "-", "unit": "", "dtype": "text"}
+		],
+	
+	"/Setup/HardwareProperties/ImageAcquisition": [
+		{"_type": "Property", "name": "Manufacturer", "value": "Hanwha Japan", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "Model", "value": "DC-NCR13U", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "SerialNo", "value": "110604792", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "Type", "value": "USB 2.0 digital camera", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "MaxFramerate", "value": 30, "unit": "FPS", "dtype": "int"},
+		{"_type": "Property", "name": "MaxSpatialRes", "value": "1280 x 1024", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "Description", "value": "This is an infrared web camera, used to take video image of animal face during recording.", "unit": "", "dtype": "text"},
+		{"_type": "Property", "name": "Owner", "value": "Hiroshi Tamura", "unit": "", "dtype": "person"},
+		{"_type": "Property", "name": "Comment", "value": "-", "unit": "", "dtype": "text"}
+		],
+	
+	"/Setup/HardwareProperties/Monitor": [
+		{"_type": "Property", "name": "Manufacturer", "value": "EIZO", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "Model", "value": "EV2736W-FS", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "SerialNo", "value": "-", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "Type", "value": "LCD(IPS) monitor", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "MaxResolution", "value": "2560x1440", "unit": "pixel", "dtype": "string"},
+		{"_type": "Property", "name": "Pitch", "value": "0.233x0.233", "unit": "mm", "dtype": "string"},
+		{"_type": "Property", "name": "DisplayAreaSize", "value": "59.67x33.56", "unit": "cm", "dtype": "string"},
+		{"_type": "Property", "name": "Description", "value": "This is the monitor for stimulus presentation", "unit": "", "dtype": "text"},
+		{"_type": "Property", "name": "Owner", "value": "Hiroshi Tamura", "unit": "", "dtype": "person"},
+		{"_type": "Property", "name": "Comment", "value": "-", "unit": "", "dtype": "text"}
+		],
+
+	"/Setup/Electrode1": [
+        {"_type": "Property", "name": "Manufacturer", "value": "-", "unit": "", "dtype": "string"},
+        {"_type": "Property", "name": "Model", "value": "-", "unit": "", "dtype": "string"},
+        {"_type": "Property", "name": "SerialNo", "value": "-", "unit": "", "dtype": "string"},
+        {"_type": "Property", "name": "Type", "value": "-", "unit": "", "dtype": "string"},
+        {"_type": "Property", "name": "ProbeCount", "value": 0, "unit": "", "dtype": "int"},
+        {"_type": "Property", "name": "ProbeInterval", "value": 0, "unit": "um", "dtype": "float"},
+        {"_type": "Property", "name": "ProbeSize", "value": 0, "unit": "um", "dtype": "float"},
+        {"_type": "Property", "name": "Material", "value": "-", "unit": "", "dtype": "string"},
+        {"_type": "Property", "name": "Lot", "value": "-", "unit": "", "dtype": "string"},
+        {"_type": "Property", "name": "Impedance", "value": 0, "unit": "Mohm", "dtype": "float"},
+        {"_type": "Property", "name": "PenetrationCount", "value": 0, "unit": "", "dtype": "int"},
+        {"_type": "Property", "name": "RecordingSite", "value": "-", "unit": "", "dtype": "string"},
+        {"_type": "Property", "name": "RecordingHemisphere", "value": "-", "unit": "", "dtype": "string"},
+        {"_type": "Property", "name": "APRecordingPosition", "value": 0, "unit": "mm", "dtype": "float"},
+        {"_type": "Property", "name": "DVRecordingPosition", "value": 0, "unit": "mm", "dtype": "float"},
+        {"_type": "Property", "name": "MLRecordingPosition", "value": 0, "unit": "mm", "dtype": "float"},
+        {"_type": "Property", "name": "Depth", "value": 0, "unit": "um", "dtype": "float"},
+        {"_type": "Property", "name": "Condition", "value": "-", "unit": "", "dtype": "text"},
+        {"_type": "Property", "name": "Comment", "value": "-", "unit": "", "dtype": "text"}
+		],
+		
+	"/Setup/Electrode2": [
+        {"_type": "Property", "name": "Manufacturer", "value": "-", "unit": "", "dtype": "string"},
+        {"_type": "Property", "name": "Model", "value": "-", "unit": "", "dtype": "string"},
+        {"_type": "Property", "name": "SerialNo", "value": "-", "unit": "", "dtype": "string"},
+        {"_type": "Property", "name": "Type", "value": "-", "unit": "", "dtype": "string"},
+        {"_type": "Property", "name": "ProbeCount", "value": 0, "unit": "", "dtype": "int"},
+        {"_type": "Property", "name": "ProbeInterval", "value": 0, "unit": "um", "dtype": "float"},
+        {"_type": "Property", "name": "ProbeSize", "value": 0, "unit": "um", "dtype": "float"},
+        {"_type": "Property", "name": "Material", "value": "-", "unit": "", "dtype": "string"},
+        {"_type": "Property", "name": "Lot", "value": "-", "unit": "", "dtype": "string"},
+        {"_type": "Property", "name": "Impedance", "value": 0, "unit": "Mohm", "dtype": "float"},
+        {"_type": "Property", "name": "PenetrationCount", "value": 0, "unit": "", "dtype": "int"},
+        {"_type": "Property", "name": "RecordingSite", "value": "-", "unit": "", "dtype": "string"},
+        {"_type": "Property", "name": "RecordingHemisphere", "value": "-", "unit": "", "dtype": "string"},
+        {"_type": "Property", "name": "APRecordingPosition", "value": 0, "unit": "mm", "dtype": "float"},
+        {"_type": "Property", "name": "DVRecordingPosition", "value": 0, "unit": "mm", "dtype": "float"},
+        {"_type": "Property", "name": "MLRecordingPosition", "value": 0, "unit": "mm", "dtype": "float"},
+        {"_type": "Property", "name": "Depth", "value": 0, "unit": "um", "dtype": "float"},
+        {"_type": "Property", "name": "Condition", "value": "-", "unit": "", "dtype": "text"},
+        {"_type": "Property", "name": "Comment", "value": "-", "unit": "", "dtype": "text"}
+		],
+		
+		
+	"/Experiment": [
+		{"_type": "Property", "name": "Type", "value": "electrophysiology", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "ProjectName", "value": "Active Vision", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "Comment", "value": "-", "unit": "", "dtype": "text"}
+		],
+	
+	"/Experiment/Behavior": [
+		{"_type": "Property", "name": "Environment", "value": "-", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "Comment", "value": "-", "unit": "", "dtype": "text"}
+		],
+        
+	"/Experiment/Behavior/Task1": [
+		{"_type": "Property", "name": "Paradigm", "value": "visual fixation", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "Protocol", "value": "Monkey is presented with various stimuli while fixating at the central fixation spot.", "unit": "", "dtype": "text"},
+		{"_type": "Property", "name": "EventID", "value": [101, 102, 103, 104, 105, 110, -101, -102], "unit": "", "dtype": "int" },
+		{"_type": "Property", "name": "EventType", "value": ["start trial (fix pt on)", "eye in", "completed fixation", "juice delivery", "trial end", "fix pt off", "no eye in event", "fail to keep in the fix window"], "unit": "", "dtype": "string"}
+		],
+	
+	"/Experiment/Behavior/Task2": [
+		{"_type": "Property", "name": "Paradigm", "value": "eye calibration", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "Protocol", "value": "Monkey fixates at calibration points presented in various positions.", "unit": "", "dtype": "text"},
+		{"_type": "Property", "name": "EventID", "value": [201, 202, 203, 204, 205, 210, -201, -202], "unit": "", "dtype": "int"}, 
+		{"_type": "Property", "name": "EventType", "value": ["start trial (fix pt on)", "eye in", "completed fixation", "juice delivery", "trial end", "fix pt off", "no eye in event", "fail to keep in the fix window"], "unit": "", "dtype": "string"} 
+		],
+		
+	"/Experiment/Behavior/Task3": [
+		{"_type": "Property", "name": "Paradigm", "value": "free viewing", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "Protocol", "value": "Monkey freely views natural scene images", "unit": "", "dtype": "text"},
+		{"_type": "Property", "name": "EventID", "value": [301, 302, 303, 304, 305, 306, 310, 311, 312, -301, -302, -303], "unit": "", "dtype": "int"},
+		{"_type": "Property", "name": "EventType", "value": ["start trial (fix pt on)", "eye in", "completed fixation", "completed FV image viewing", "juice delivery", "trial end", "fix pt off", "image1 (scene) on", "image1 (scene) off", "no eye in event", "fail to keep in the fix window", "fail to keep in the FV image"], "unit": "", "dtype": "string"}
+		],
+		
+	"/Experiment/Behavior/Task4": [
+		{"_type": "Property", "name": "Paradigm", "value": "search", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "Protocol", "value": "Monkey searches for objects embedded in natural scene images", "unit": "", "dtype": "text"},
+		{"_type": "Property", "name": "EventID", "value": [401, 402, 403, 404, 405, 406, 407, 408, 410, 411, 412, 413, 414, -401, -402, -403, -404, -405, -406, -407, -408], "unit": "", "dtype": "int"},
+		{"_type": "Property", "name": "EventType", "value": ["start trial (fix pt on)", "eye in", "completed fixation", "completed FV image viewing", "juice delivery", "completed the answer", "juice delivery", "trial end", "fix pt off", "image1 (scene) on", "image1 (scene) off", "image2 (object) on", "image2 (object) off", "no eye in event", "fail to keep in the fix window", "fail to keep in the FV image", "lever was pressed but the eye was not in the window", "eye got off from the screen", "time up (no lever press)", "fail to keep the lever", "fail to keep the eye on the target"], "unit": "", "dtype": "string"} 
+		],
+		
+	"/Experiment/Behavior/Task5": [
+		{"_type": "Property", "name": "Paradigm", "value": "memory", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "Protocol", "value": "Monkey memorizes objects embedded in natural scene images", "unit": "", "dtype": "text"},
+		{"_type": "Property", "name": "EventID", "value": [501, 502, 503, 504, 505, 506, 507, 508, 510, 511, 512, 513, 514, -501, -502, -503, -504, -505], "unit": "", "dtype": "int"},
+		{"_type": "Property", "name": "EventType", "value": ["start trial (fix pt on)", "eye in", "completed fixation", "completed FV image viewing", "correct answer by lever press", "corrct answer by not leve press", "juice delivery", "trial end", "fix pt off", "image1 (scene) on", "image1 (scene) off", "image2 (object) on", "image2 (object) off", "no eye in event", "fail to keep in the fix window", "fail to keep in the FV image", "false alarm by lever press", "false answer by not lever press"], "unit": "", "dtype": "string"}
+		],
+		
+	"/Experiment/Electrophysiology": [
+		{"_type": "Property", "name": "Type", "value": "extracellular recording", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "Subtype", "value": "multi electrode recording", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "RecordingType", "value": "chronic", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "SubjectState", "value": "awake", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "Comment", "value": "-", "unit": "", "dtype": "text"}
+		],
+
+	"/Recording": [
+		{"_type": "Property", "name": "Experimenter", "value": "-", "unit": "", "dtype": "person"},
+		{"_type": "Property", "name": "Comment", "value": "-", "unit": "", "dtype": "text"}
+		],
+		
+	"/Recording/HardwareSettings": [
+		{"_type": "Property", "name": "Comment", "value": "-", "unit": "", "dtype": "text"}
+		],
+	
+	"/Recording/HardwareSettings/HeadStage1": [
+		{"_type": "Property", "name": "Comment", "value": "-", "unit": "", "dtype": "text"}
+		],
+	
+	"/Recording/HardwareSettings/HeadStage2": [
+		{"_type": "Property", "name": "Comment", "value": "-", "unit": "", "dtype": "text"}
+		],
+	
+	"/Recording/HardwareSettings/Amplifier": [
+		{"_type": "Property", "name": "Comment", "value": "-", "unit": "", "dtype": "text"}
+		],
+	"/Recording/HardwareSettings/DataAcquisition1": [
+		{"_type": "Property", "name": "AIUsedChannelCount", "value": 0, "unit": "", "dtype": "int"},
+		{"_type": "Property", "name": "AIChannelGain", "value": 1, "unit": "", "dtype": "float"},
+		{"_type": "Property", "name": "AIReference", "value": "-", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "AIPolarity", "value": "normal", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "Comment", "value": "-", "unit": "", "dtype": "text"}
+		],
+	
+	"/Recording/HardwareSettings/DataAcquisition2": [
+		{"_type": "Property", "name": "AIUsedChannelCount", "value": 0, "unit": "", "dtype": "int"},
+		{"_type": "Property", "name": "AIChannelGain", "value": 1, "unit": "", "dtype": "float"},
+		{"_type": "Property", "name": "AIReference", "value": "-", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "AIPolarity", "value": "normal", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "Comment", "value": "-", "unit": "", "dtype": "text"}
+		],
+	
+	"/Recording/HardwareSettings/DataAcquisition3": [
+		{"_type": "Property", "name": "AIUsedChannelCount", "value": 0, "unit": "", "dtype": "int"},
+		{"_type": "Property", "name": "AIChannelGain", "value": 1, "unit": "", "dtype": "float"},
+		{"_type": "Property", "name": "AIReference", "value": "-", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "AIPolarity", "value": "normal", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "Comment", "value": "-", "unit": "", "dtype": "text"}
+		],
+	
+	"/Recording/HardwareSettings/Eyetracker1": [
+        {"_type": "Property", "name": "Side", "value": "?", "unit": "", "dtype": "string"},
+        {"_type": "Property", "name": "VerticalGain", "value": 0, "unit": "", "dtype": "float"},
+        {"_type": "Property", "name": "VerticalOffset", "value": 0, "unit": "", "dtype": "float"},
+        {"_type": "Property", "name": "VerticalCrossTalk", "value": 0, "unit": "", "dtype": "float"},
+        {"_type": "Property", "name": "VerticalPolarity", "value": "?", "unit": "", "dtype": "string"},				
+        {"_type": "Property", "name": "HorizontalGain", "value": 0, "unit": "", "dtype": "float"},
+        {"_type": "Property", "name": "HorizontalOffset", "value": 0, "unit": "", "dtype": "float"},
+        {"_type": "Property", "name": "HorizontalCrossTalk", "value": 0, "unit": "", "dtype": "float"},
+        {"_type": "Property", "name": "HorizontalPolarity", "value": "?", "unit": "", "dtype": "string"},				
+        {"_type": "Property", "name": "Comment", "value": "-", "unit": "", "dtype": "text"}
+		],
+	
+	"/Recording/HardwareSettings/Eyetracker2": [
+		{"_type": "Property", "name": "SampleRate", "value": 492, "unit": "Hz", "dtype": "float"},
+		{"_type": "Property", "name": "Comment", "value": "-", "unit": "", "dtype": "text"}
+		],
+	
+	"/Recording/HardwareSettings/ImageAcquisition": [
+		{"_type": "Property", "name": "Framerate", "value": 30, "unit": "FPS", "dtype": "int"},
+		{"_type": "Property", "name": "SpatialRes", "value": "320 x 240", "unit": "", "dtype": "string"},
+		{"_type": "Property", "name": "Comment", "value": "-", "unit": "", "dtype": "text"}
+		],
+		
+	"/Recording/HardwareSettings/Monitor": [
+		{"_type": "Property", "name": "Resolution", "value": "2560x1440", "unit": "", "dtype": "text"},
+        {"_type": "Property", "name": "PixelPerDegree", "value": 42.9, "unit": "pixel/deg", "dtype": "float"},
+        {"_type": "Property", "name": "RefreshRate", "value": 60, "unit": "Hz", "dtype": "int"},
+        {"_type": "Property", "name": "Gamma", "value": 2.2054, "unit": "", "dtype": "float"},
+        {"_type": "Property", "name": "MaxLuminance", "value": 270.3838, "unit": "cd/m2", "dtype": "float"},
+        {"_type": "Property", "name": "MinimumLuminance", "value": 2.2054, "unit": "cd/m2", "dtype": "float"},
+        {"_type": "Property", "name": "Distance", "value": 570.0, "unit": "mm", "dtype": "float"},
+		{"_type": "Property", "name": "Comment", "value": "-", "unit": "", "dtype": "text"}
+		],
+		
+	"/Dataset": [
+		{"_type": "Property", "name": "Comment", "value": "-", "unit": "", "dtype": "text"}
+		],
+		
+	"/Dataset/AnalogData1": [
+		{"_type": "Property", "name": "Comment", "value": "-", "unit": "", "dtype": "text"}
+		],
+	
+	"/Dataset/AnalogData2": [
+		{"_type": "Property", "name": "Comment", "value": "-", "unit": "", "dtype": "text"}
+		],
+	
+	"/Dataset/AnalogData3": [
+		{"_type": "Property", "name": "Comment", "value": "-", "unit": "", "dtype": "text"}
+		],
+	
+	"/Dataset/AnalogData3/CalibParams": [
+		{"_type": "Property", "name": "Comment", "value": "-", "unit": "", "dtype": "text"}
+		],
+	
+	"/Dataset/EventData": [
+		{"_type": "Property", "name": "Comment", "value": "-", "unit": "", "dtype": "text"}
+		],
+        
+	"/Dataset/StimulusData": [
+		{"_type": "Property", "name": "Comment", "value": "-", "unit": "", "dtype": "text"}
+		],
+	
+	"/Dataset/VideoData": [
+		{"_type": "Property", "name": "Comment", "value": "-", "unit": "", "dtype": "text"}
+		]
+}
