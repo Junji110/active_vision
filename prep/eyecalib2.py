@@ -363,6 +363,7 @@ def saveparams_odml(datadir, sess, rec, blk, ignore, coeffs):
     
     # save metadata back to odml file
     XMLWriter(metadata).write_file(fn_odML)
+    print("Eye calibration parameters saved in the odML file {0}.".format(fn_odML))
     
 def plot_summary(gazepos, signal, transform, xrange, yrange, vrange, ignore, method, method_param):
     import matplotlib.pyplot as plt

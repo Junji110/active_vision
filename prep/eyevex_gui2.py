@@ -37,8 +37,8 @@ def load_odml(datadir, sess, rec, blk):
              'Fs': metadata['Recording']['HardwareSettings']['DataAcquisition3'].properties['AISampleRate'].value.data,
 #             'pxlperdeg': metadata['Setup']['HardwareProperties']['Monitor'].properties['PixelPerDegree'].value.data,
              'pxlperdeg': metadata['Recording']['HardwareSettings']['Monitor'].properties['PixelPerDegree'].value.data,
-             'datafile': metadata['Dataset']['AnalogData3'].properties['File'].value.data,
-             'taskfile': metadata['Dataset']['EventData'].properties['File'].value.data,
+             'datafile': os.path.basename(metadata['Dataset']['AnalogData3'].properties['File'].value.data),
+             'taskfile': os.path.basename(metadata['Dataset']['EventData'].properties['File'].value.data),
              'evID': [x.data for x in metadata['Experiment']['Behavior']['Task3'].properties['EventID'].value],
              'evtype': [x.data for x in metadata['Experiment']['Behavior']['Task3'].properties['EventType'].value],
              
@@ -97,7 +97,8 @@ def load_calibparam(datadir, sess, rec, blk):
 def get_events(param):
     convfunc = lambda x: long(x)
     converters = {'INTERVAL': convfunc, 'TIMING_CLOCK': convfunc, 'GL_TIMER_VAL': convfunc}
-    taskdata = np.genfromtxt(param['taskfile'], skip_header=1, delimiter=',', names=True, dtype=None, converters=converters)
+    fn_task = "{datadir}/{sess}/{sess}_rec{rec}/{taskfile}".format(**param)
+    taskdata = np.genfromtxt(fn_task, skip_header=1, delimiter=',', names=True, dtype=None, converters=converters)
     blockdata = taskdata[taskdata['g_block_num'] == param['blk']]
     
     evID = blockdata['log_task_ctrl']
@@ -507,7 +508,8 @@ class MainFrame(wx.Frame):
         events = get_events(param)
         
         # initialize lvd file reader
-        lvd_reader = lvdread.LVDReader(param['datafile'])
+        fn_data = "{datadir}/{sess}/{datafile}".format(**param)
+        lvd_reader = lvdread.LVDReader(fn_data)
         
         # define widgets
         self.plotpanel = PlotPanel(self, -1)
