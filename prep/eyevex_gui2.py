@@ -20,6 +20,7 @@ from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg, NavigationToolb
 
 import lvdread
 import eyevex
+import eyecalib2
 
 
 def load_odml(datadir, sess, rec, blk):
@@ -143,7 +144,8 @@ def save_calibparam(fn_odML, param):
     for key, val in param['calib'].items():
         propname = 'blk{0}_{1}'.format(param['blk'], key)
         propdtype = type(val[0]).__name__ if isinstance(val, list) else type(val).__name__
-        if propdtype == 'unicode': propdtype = 'string'
+#        if propdtype == 'unicode': propdtype = 'string'
+        if propdtype in ('str', 'unicode'): propdtype = 'string'
         prop = {'name': propname, 'value': val, 'unit': "", 'dtype': propdtype}
         if sect_calib.contains(odml.Property(propname, None)):
             sect_calib.remove(sect_calib.properties[propname])
@@ -430,7 +432,11 @@ class ControlPanel(wx.Panel):
         eyecoil = eyecoil.T
         
         # extract eye events
-        sac, fix, eyepos, eyevelo, eyeaccl = eyevex.main(eyecoil, self.Fs, self.calib_coeffs, self.param['eex'], ret_eyepos=True)
+        if isinstance(self.calib_coeffs, (str, unicode)):
+            transform = eyecalib2.gen_transform_from_block(self.calib_coeffs, self.param['datadir'], self.param['calib']['sess'], self.param['calib']['rec'], self.param['calib']['blk'])
+            sac, fix, eyepos, eyevelo, eyeaccl = eyevex.main(eyecoil, self.Fs, transform, self.param['eex'], ret_eyepos=True)
+        else:
+            sac, fix, eyepos, eyevelo, eyeaccl = eyevex.main(eyecoil, self.Fs, self.calib_coeffs, self.param['eex'], ret_eyepos=True)
         
         # call plot function
         imgID = self.param['stimID2imgID'][self.param['stimID'][n_trial - 1] - 1]
@@ -548,6 +554,8 @@ if __name__ == '__main__':
     parser.add_argument("--calib_rec", dest="calibrec")
     parser.add_argument("--calib_blk", dest="calibblk")
     parser.add_argument("--calib", nargs=3, default=None)
+    parser.add_argument("--calib_method", dest="calibmeth")
+    parser.add_argument("--calib_ignore", dest="calibignore", nargs='*', type=int, default=[-1,])
     parser.add_argument("--on_event", default=conf['eyevex_gui2']['on_event'])
     parser.add_argument("--off_event", default=conf['eyevex_gui2']['off_event'])
     arg = parser.parse_args()
@@ -583,7 +591,7 @@ if __name__ == '__main__':
                  {
                   'datadir': datadir,
                   'sess': sess, 'rec': rec, 'blk': blk,
-                  'calib_sess': calibsess, 'calib_rec': calibrec, 'calib_blk': calibblk,
+#                  'calib_sess': calibsess, 'calib_rec': calibrec, 'calib_blk': calibblk,
                   'stimdir': arg.stimdir,
                   'on_event': arg.on_event, 'off_event': arg.off_event,
                   }
@@ -595,8 +603,20 @@ if __name__ == '__main__':
         param['eex'] = conf['eyevex_gui2']['eex_param']
         
     # load calibration parameters
-    param['calib'] = load_calibparam(datadir, calibsess, calibrec, calibblk)
+    if arg.calibmeth in ['linear', 'cubic', 'quintic', 'thin_plate']:
+        param['calib'] = {'Coeffs': arg.calibmeth,
+                          'Ignore': arg.calibignore,
+                          'sess': calibsess,
+                          'rec': calibrec,
+                          'blk': calibblk
+                          }
+    else:
+        param['calib'] = load_calibparam(datadir, calibsess, calibrec, calibblk)
         
+#    print arg
+#    print param['eex']
+#    print param['calib']
+    
     # initiate GUI
     matplotlib.interactive(True)
     app = wx.App(redirect=False)

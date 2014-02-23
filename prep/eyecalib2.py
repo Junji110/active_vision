@@ -18,6 +18,15 @@ from odml.tools.xmlparser import XMLWriter, XMLReader
 import daqread
 import lvdread
 
+
+def gen_transform_from_block(method, datadir, sess, rec, blk, ignore=[-1]):
+    ideal, actual = extract_eyecalib_data(datadir, sess, rec, blk)
+    mask_ignore = np.array([(x not in ignore) for x in range(len(actual))])
+    actual_avr, ideal_avr = average_fixations(actual[mask_ignore], ideal[mask_ignore])
+    tf_x = interpolate.Rbf(actual_avr[:, 0], actual_avr[:, 1], ideal_avr[:, 0], function=str(method))
+    tf_y = interpolate.Rbf(actual_avr[:, 0], actual_avr[:, 1], ideal_avr[:, 1], function=str(method))
+    return tf_x, tf_y
+    
 def polynomial(order, coeffs):
     '''
     Return a bivariate polynomial function of given order and coefficients. For
@@ -365,6 +374,21 @@ def saveparams_odml(datadir, sess, rec, blk, ignore, coeffs):
     XMLWriter(metadata).write_file(fn_odML)
     print("Eye calibration parameters saved in the odML file {0}.".format(fn_odML))
     
+def average_fixations(actual, ideal):
+    eyecoil= {}
+    for i_fix, fixpos in enumerate(ideal):
+        fixpos_tuple = tuple(fixpos.tolist())
+        if fixpos_tuple in eyecoil:
+            eyecoil[fixpos_tuple].append(actual[i_fix])
+        else:
+            eyecoil[fixpos_tuple] = [actual[i_fix]]
+    actual_avr = np.empty((len(eyecoil), 2))
+    ideal_avr = np.empty((len(eyecoil), 2))
+    for i_fix, fixpos in enumerate(eyecoil):
+        actual_avr[i_fix] = np.array(eyecoil[fixpos]).mean(axis=0)
+        ideal_avr[i_fix] = fixpos
+    return actual_avr, ideal_avr
+
 def plot_summary(gazepos, signal, transform, xrange, yrange, vrange, ignore, method, method_param):
     import matplotlib.pyplot as plt
    
@@ -415,8 +439,17 @@ def plot_summary(gazepos, signal, transform, xrange, yrange, vrange, ignore, met
     plt.ylim(yrange)
     plt.colorbar().set_label('Vertical gaze position (deg)')
     plt.grid()
-    
     plt.suptitle("Transform obtained by %s (param: %.2f) with %d samples" % (method, method_param, np.sum(mask_goodsig)))
+    
+    plt.figure(3)
+    plt.subplot(1, 1, 1, aspect=True)
+    for i in range(len(signal)):
+        plt.plot(transform[0](signal[i, 0], signal[i, 1]), transform[1](signal[i, 0], signal[i, 1]), 'x')
+    plt.xlabel("estimated horizontal gaze position (deg)")
+    plt.ylabel("estimated vertical gaze position (deg)")
+    plt.grid()
+    plt.suptitle("Transformed eye coil signal at each fixation")
+    
     plt.show()
     
     
@@ -465,6 +498,17 @@ if __name__ == '__main__':
     if None in (arg.xrange, arg.yrange, arg.vrange):
         print coeffs
     else:
-        tf_x = polynomial(arg.method_param, coeffs[:, 0])
-        tf_y = polynomial(arg.method_param, coeffs[:, 1])
+        if arg.method == 'polynomial_fit':
+            tf_x = polynomial(arg.method_param, coeffs[:, 0])
+            tf_y = polynomial(arg.method_param, coeffs[:, 1])
+        elif arg.method in ['multiquadric', 'inverse', 'gaussian']:
+            if not (isinstance(arg.method_param, float) or isinstance(arg.method_param, int)):
+                raise ValueError("Specify the parameter of the radial basis function via keyword argument 'param'")
+            actual_avr, ideal_avr = average_fixations(actual[mask_ignore], ideal[mask_ignore])
+            tf_x = interpolate.Rbf(actual_avr[:, 0], actual_avr[:, 1], ideal_avr[:, 0], function=arg.method, epsilon=arg.param)
+            tf_y = interpolate.Rbf(actual_avr[:, 0], actual_avr[:, 1], ideal_avr[:, 1], function=arg.method, epsilon=arg.param)
+        elif arg.method in ['linear', 'cubic', 'quintic', 'thin_plate']:
+            actual_avr, ideal_avr = average_fixations(actual[mask_ignore], ideal[mask_ignore])
+            tf_x = interpolate.Rbf(actual_avr[:, 0], actual_avr[:, 1], ideal_avr[:, 0], function=arg.method)
+            tf_y = interpolate.Rbf(actual_avr[:, 0], actual_avr[:, 1], ideal_avr[:, 1], function=arg.method)
         plot_summary(ideal, actual, (tf_x, tf_y), arg.xrange, arg.yrange, arg.vrange, arg.ignore, arg.method, arg.method_param)

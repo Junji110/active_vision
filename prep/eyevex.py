@@ -9,6 +9,8 @@ import os
 import time
 import numpy as np
 
+import eyecalib2
+
 
 def index_nearest(data, x):
     datalen = len(data)
@@ -98,11 +100,14 @@ def moving_average(data, smooth_len):
     return ifft(fft(tmpdata) * fft(kernel))[0:N].real + trend
 
 def eyecoil2eyepos(eyecoil, Fs, calib_coeffs, smooth_width, calib_order=2, verbose=False):
-    calib_coeffs_arr = np.array(calib_coeffs).reshape((2,6)).T
+    if callable(calib_coeffs[0]) and callable(calib_coeffs[1]):
+        volt2deg_x, volt2deg_y = calib_coeffs
+    else:
+        calib_coeffs_arr = np.array(calib_coeffs).reshape((2,6)).T
+        volt2deg_x = bivariate_polynomial(calib_order, calib_coeffs_arr[:, 0])
+        volt2deg_y = bivariate_polynomial(calib_order, calib_coeffs_arr[:, 1])
     
     # calibrate eye position
-    volt2deg_x = bivariate_polynomial(calib_order, calib_coeffs_arr[:, 0])
-    volt2deg_y = bivariate_polynomial(calib_order, calib_coeffs_arr[:, 1])
     eyepos = np.array([volt2deg_x(eyecoil[:, 0], eyecoil[:, 1]), volt2deg_y(eyecoil[:, 0], eyecoil[:, 1])])
     if verbose: print "Preprocessing 1/4: eye calibration done."
     
