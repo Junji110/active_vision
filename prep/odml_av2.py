@@ -316,22 +316,27 @@ def parse_taskdata(taskdata):
     for i_block in range(1, num_block):
         num_trial = trial[block == i_block].max() + 1
         task_type = task_type_all[block == i_block][0]
-        info = {'task_type': task_type, 'num_trials': num_trial - 1, 'trial_start': [], 'trial_end': [], 'stimID': [], 'success': []}
-        for i_trial in range(1, num_trial):
-#        for i_trial in range(0, num_trial):
-            trial_mask = (block == i_block) & (trial == i_trial)
-            timing = timing_all[trial_mask]
-            stimID = stimID_all[trial_mask]
-            success = success_all[trial_mask]
-            eventID = eventID_all[trial_mask]
-            
-            info['trial_start'].append(timing.min())
-            info['trial_end'].append(timing.max())
-            info['stimID'].append(stimID[0])
-            if 0 in success:
-                info['success'].append(eventID.min())
-            else:
-                info['success'].append(1)
+        info = {'task_type': task_type, 'num_trials': num_trial - 1}
+        if num_trial > 1:
+            info['trial_start'] = []
+            info['trial_end'] = []
+            info['stimID'] = []
+            info['success'] = []
+            for i_trial in range(1, num_trial):
+    #        for i_trial in range(0, num_trial):
+                trial_mask = (block == i_block) & (trial == i_trial)
+                timing = timing_all[trial_mask]
+                stimID = stimID_all[trial_mask]
+                success = success_all[trial_mask]
+                eventID = eventID_all[trial_mask]
+                
+                info['trial_start'].append(timing.min())
+                info['trial_end'].append(timing.max())
+                info['stimID'].append(stimID[0])
+                if 0 in success:
+                    info['success'].append(eventID.min())
+                else:
+                    info['success'].append(1)
         block_info.append(info)
     
     return block_info
