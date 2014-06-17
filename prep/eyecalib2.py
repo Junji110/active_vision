@@ -321,7 +321,7 @@ def extract_eyecalib_data(datadir, session, rec, blk):
     elif data_ext == 'lvd':
         fix_off_id = 210
         fnlist_imginfo = find_filenames(datadir, session, rec, 'imginfo')
-        fnlist_imginfo = filter(lambda x: '_blk{0}'.format(blk) in x.split('/')[-1], fnlist_imginfo)
+        fnlist_imginfo = filter(lambda x: '_blk{0}_'.format(blk) in x.split('/')[-1], fnlist_imginfo)
         if len(fnlist_imginfo) == 0:
             raise ValueError("Specified block number {0} is not valid for session {1}_rec{2}.".format(blk, session, rec))
         else:
