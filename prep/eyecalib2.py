@@ -19,13 +19,29 @@ import daqread
 import lvdread
 
 
-def gen_transform_from_block(method, datadir, sess, rec, blk, ignore=[-1]):
+def gen_transform_from_block(method, param, datadir, sess, rec, blk, ignore=[-1]):
     ideal, actual = extract_eyecalib_data(datadir, sess, rec, blk)
     mask_ignore = np.array([(x not in ignore) for x in range(len(actual))])
-    actual_avr, ideal_avr = average_fixations(actual[mask_ignore], ideal[mask_ignore])
-    tf_x = interpolate.Rbf(actual_avr[:, 0], actual_avr[:, 1], ideal_avr[:, 0], function=str(method))
-    tf_y = interpolate.Rbf(actual_avr[:, 0], actual_avr[:, 1], ideal_avr[:, 1], function=str(method))
+    if method == 'polynomial_fit':
+        if not (isinstance(param, int) or isinstance(param, float)):
+            raise ValueError("Specify the order of the polynomial via the argument 'param'")
+        order = int(param)
+        coeffs, residues, rank, singular = polynomial_fit(ideal, actual, order)
+        tf_x = polynomial(order, coeffs[:, 0])
+        tf_y = polynomial(order, coeffs[:, 1])
+    else:
+        actual_avr, ideal_avr = average_fixations(actual[mask_ignore], ideal[mask_ignore])
+        if method in ['linear', 'cubic', 'quintic', 'thin_plate']:
+            tf_x = interpolate.Rbf(actual_avr[:, 0], actual_avr[:, 1], ideal_avr[:, 0], function=str(method))
+            tf_y = interpolate.Rbf(actual_avr[:, 0], actual_avr[:, 1], ideal_avr[:, 1], function=str(method))
+        elif method in ['multiquadric', 'inverse', 'gaussian']:
+            if not (isinstance(param, float) or isinstance(param, int)):
+                raise ValueError("Specify the parameter of the radial basis function via the argument 'param'")
+            tf_x = interpolate.Rbf(actual_avr[:, 0], actual_avr[:, 1], ideal_avr[:, 0], function=str(method))
+            tf_y = interpolate.Rbf(actual_avr[:, 0], actual_avr[:, 1], ideal_avr[:, 1], function=str(method))
+
     return tf_x, tf_y
+
     
 def polynomial(order, coeffs):
     '''
