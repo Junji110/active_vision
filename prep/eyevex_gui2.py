@@ -87,6 +87,8 @@ def load_calibparam(datadir, sess, rec, blk):
             paramkey = match.group(1)
             if isinstance(prop.value, list):
                 param[paramkey] = [x.data for x in prop.value]
+            elif paramkey == "Ignore":
+                param[paramkey] = [prop.value.data,]
             else:
                 param[paramkey] = prop.value.data
     
@@ -264,7 +266,9 @@ class ControlPanel(wx.Panel):
         self.param = copy.deepcopy(param)
         self.param_default = copy.deepcopy(param)
         self.Fs = param['Fs']
-        self.calib_coeffs = param['calib']['Coeffs']
+        
+        # generate eye signal transform functions
+        self.transform = eyecalib2.gen_transform_from_block(self.param['calib']['method'], self.param['calib']['param'], self.param['datadir'], self.param['calib']['calib_sess'], self.param['calib']['calib_rec'], self.param['calib']['calib_blk'], self.param['calib']['Ignore'])
         
         wx.Panel.__init__(self, parent, id)
         
@@ -401,6 +405,7 @@ class ControlPanel(wx.Panel):
         if self.param['success'][n_trial - 1] not in [1, -303]:
             self.parent.statusbar.SetStatusText('No free viewing period in Trial {0}'.format(n_trial))
             figure.clf()
+            figure.suptitle('No figures to draw for trial {0}'.format(n_trial))
             figure.canvas.draw()
             return
         
@@ -411,6 +416,7 @@ class ControlPanel(wx.Panel):
         if evID_on not in evIDs or evID_off not in evIDs:
             self.parent.statusbar.SetStatusText('Trial onset or offset is missing in Trial {0}'.format(n_trial))
             figure.clf()
+            figure.suptitle('No figures to draw for trial {0}'.format(n_trial))
             figure.canvas.draw()
             return
         
@@ -420,9 +426,15 @@ class ControlPanel(wx.Panel):
         if img_on == img_off:
             self.parent.statusbar.SetStatusText('The duration of free viewing period is zero in Trial {0}'.format(n_trial))
             figure.clf()
+            figure.suptitle('No figures to draw for trial {0}'.format(n_trial))
             figure.canvas.draw()
             return
         
+        self.parent.statusbar.SetStatusText('Draw Trial {0}'.format(n_trial))
+        figure.clf()
+        figure.suptitle('Drawing figures for trial {0}...'.format(n_trial))
+        figure.canvas.draw()
+
         # set the parameter values in the control panel to the param dict
         for key in self.tc.keys():
             self.param['eex'][key] = float(self.tc[key].GetValue())
@@ -432,18 +444,13 @@ class ControlPanel(wx.Panel):
         eyecoil = eyecoil.T
         
         # extract eye events
-        if isinstance(self.calib_coeffs, (str, unicode)):
-            transform = eyecalib2.gen_transform_from_block(self.calib_coeffs, self.param['datadir'], self.param['calib']['sess'], self.param['calib']['rec'], self.param['calib']['blk'])
-            sac, fix, eyepos, eyevelo, eyeaccl = eyevex.main(eyecoil, self.Fs, transform, self.param['eex'], ret_eyepos=True)
-        else:
-            sac, fix, eyepos, eyevelo, eyeaccl = eyevex.main(eyecoil, self.Fs, self.calib_coeffs, self.param['eex'], ret_eyepos=True)
+        sac, fix, eyepos, eyevelo, eyeaccl = eyevex.main(eyecoil, self.Fs, self.transform, self.param['eex'], ret_eyepos=True)
         
         # call plot function
         imgID = self.param['stimID2imgID'][self.param['stimID'][n_trial - 1] - 1]
         fn_stim = "{0}/{1}/{2}.png".format(self.param['stimdir'], self.param['stimsetname'], imgID)
         img_stim = matplotlib.image.imread(fn_stim) * 0.7   # dimmed by 0.7 times the original luminance
         
-        self.parent.statusbar.SetStatusText('Draw Trial {0}'.format(n_trial))
         drawgraph(figure, img_stim, sac, fix, eyepos, eyevelo, eyeaccl, self.Fs, self.param, t_mark)
         figure.canvas.draw()
 
@@ -474,7 +481,8 @@ class ControlPanel(wx.Panel):
         idx_fin = self.task_events[self.task_events['trial'] == task_fin]['evtime'][-1]
         eyecoil = self.lvd_reader.get_data(['eyecoil_x', 'eyecoil_y'], [idx_ini, idx_fin])
         eyecoil = eyecoil.T
-        sac, fix = eyevex.main(eyecoil, self.Fs, self.calib_coeffs, self.param['eex'], verbose=True)
+#         sac, fix = eyevex.main(eyecoil, self.Fs, self.calib_coeffs, self.param['eex'], verbose=True)
+        sac, fix = eyevex.main(eyecoil, self.Fs, self.transform, self.param['eex'], verbose=True)
         
         # format data
         sac['on'] += idx_ini; sac['off'] += idx_ini
@@ -554,7 +562,8 @@ if __name__ == '__main__':
     parser.add_argument("--calib_rec", dest="calibrec")
     parser.add_argument("--calib_blk", dest="calibblk")
     parser.add_argument("--calib", nargs=3, default=None)
-    parser.add_argument("--calib_method", dest="calibmeth")
+    parser.add_argument("--calib_method", dest="calibmeth", default=conf['eyevex_gui2']['calib_method'])
+    parser.add_argument("--calib_param", dest="calibparam", default=2)
     parser.add_argument("--calib_ignore", dest="calibignore", nargs='*', type=int, default=[-1,])
     parser.add_argument("--on_event", default=conf['eyevex_gui2']['on_event'])
     parser.add_argument("--off_event", default=conf['eyevex_gui2']['off_event'])
@@ -603,19 +612,9 @@ if __name__ == '__main__':
         param['eex'] = conf['eyevex_gui2']['eex_param']
         
     # load calibration parameters
-    if arg.calibmeth in ['linear', 'cubic', 'quintic', 'thin_plate']:
-        param['calib'] = {'Coeffs': arg.calibmeth,
-                          'Ignore': arg.calibignore,
-                          'sess': calibsess,
-                          'rec': calibrec,
-                          'blk': calibblk
-                          }
-    else:
-        param['calib'] = load_calibparam(datadir, calibsess, calibrec, calibblk)
-        
-#    print arg
-#    print param['eex']
-#    print param['calib']
+    param['calib'] = load_calibparam(datadir, calibsess, calibrec, calibblk)
+    param['calib']['method'] = arg.calibmeth
+    param['calib']['param'] = arg.calibparam
     
     # initiate GUI
     matplotlib.interactive(True)
