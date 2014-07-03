@@ -93,9 +93,13 @@ def load_calibparam(datadir, sess, rec, blk):
                 param[paramkey] = prop.value.data
     
     if len(param) == 0:
-        raise ValueError("No eye calibration parameters for block {0} found in {1}".format(blk, fn_odML))
-    else:
-        return param
+        param['calib_sess'] = sess
+        param['calib_rec'] = rec
+        param['calib_blk'] = blk
+        param['Ignore'] = [-1]
+#         raise ValueError("No eye calibration parameters for block {0} found in {1}".format(blk, fn_odML))
+
+    return param
         
 def get_events(param):
     convfunc = lambda x: long(x)
