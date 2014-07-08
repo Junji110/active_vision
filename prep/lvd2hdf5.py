@@ -49,7 +49,7 @@ if __name__ == "__main__":
             grp = f.create_group("/param")
             for key in param:
                 grp.create_dataset(key, data=param[key])
-            grp.create_dataset("donwsample_factor", data=dsfactor)
+            grp.create_dataset("downsample_factor", data=dsfactor)
 
             grp = f.create_group("/header")
             for key in header:
