@@ -7,6 +7,7 @@ Written by Junji Ito (j.ito@fz-juelich.de) on 2013.09.26
 '''
 import os
 import json
+import h5py
 
 import numpy as np
 from scipy import linalg, interpolate
@@ -17,6 +18,7 @@ from odml.tools.xmlparser import XMLWriter, XMLReader
 #from active_vision.fileio import daqread
 import daqread
 import lvdread
+import hdf5read
 
 
 def gen_transform_from_block(method, param, datadir, sess, rec, blk, ignore=[-1]):
@@ -275,6 +277,23 @@ def get_eyecalib_fixpos(filename):
     f_posy = t_info['f_posy'].reshape(-1)
     return np.array((f_posx, f_posy)).T
 
+def extract_eyecalib_signal_hdf5(filename, blk, fix_off):
+    hdf5_reader = hdf5read.HDF5Reader(filename)
+    header = hdf5_reader.get_header()
+    param = hdf5_reader.get_param()
+    
+    ch_eyecoil_x = header['AIUsedChannelName'].tolist().index('eyecoil_x')
+    ch_eyecoil_y = header['AIUsedChannelName'].tolist().index('eyecoil_y')
+    dsfactor = param['downsample_factor']
+    
+    eyecoil = np.empty((len(fix_off), 2))
+    for i_trial, idx in enumerate(fix_off):
+        # get eye coil data at fixation offset
+        eyecoil[i_trial][0] = hdf5_reader.get_data(ch_eyecoil_x, samplerange=[idx/dsfactor, idx/dsfactor+1])[0]
+        eyecoil[i_trial][1] = hdf5_reader.get_data(ch_eyecoil_y, samplerange=[idx/dsfactor, idx/dsfactor+1])[0]
+    
+    return eyecoil
+
 def extract_eyecalib_signal_lvd(filename, blk, fix_off):
     lvd_reader = lvdread.LVDReader(filename)
     header = lvd_reader.get_header()
@@ -317,6 +336,8 @@ def extract_eyecalib_signal(data_type, filename, fix_off, blk=-1):
         return extract_eyecalib_signal_daq(filename, fix_off)
     elif data_type == 'lvd':
         return extract_eyecalib_signal_lvd(filename, blk, fix_off)
+    elif data_type == 'hdf5':
+        return extract_eyecalib_signal_hdf5(filename, blk, fix_off)
 
 def extract_eyecalib_data(datadir, session, rec, blk):   
     # identify the format of the data file from its extension
@@ -334,7 +355,7 @@ def extract_eyecalib_data(datadir, session, rec, blk):
     if data_ext == 'daq':
         fix_off_id = 10
         fn_imginfo = find_filenames(datadir, session, rec, 'imginfo')[0]
-    elif data_ext == 'lvd':
+    elif data_ext in ('lvd', 'hdf5'):
         fix_off_id = 210
         fnlist_imginfo = find_filenames(datadir, session, rec, 'imginfo')
         fnlist_imginfo = filter(lambda x: '_blk{0}_'.format(blk) in x.split('/')[-1], fnlist_imginfo)
