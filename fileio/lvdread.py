@@ -133,7 +133,7 @@ class LVDReader(object):
                 
             # convert channel name string to channel index number
             for i, ch in enumerate(chan):
-                if isinstance(ch, str):
+                if isinstance(ch, str) or isinstance(ch, unicode):
                     chan[i] = self.__chname2chidx(ch)
                 else:
                     chan[i] = int(ch)
