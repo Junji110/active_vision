@@ -160,7 +160,7 @@ if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument("--rawdir", default=conf['rawdir'])
     parser.add_argument("--prepdir", default=conf['prepdir'])
-    parser.add_argument("--data", nargs=3, default=[20140529, 6, 1])
+    parser.add_argument("--data", nargs=3, default=[20140529, 8, 1])
     parser.add_argument("--timerange", nargs=2, default=conf['quickcsd']['timerange'])
     parser.add_argument("--h", type=float, default=conf['quickcsd']['h'])
     parser.add_argument("--R", type=float, default=conf['quickcsd']['R'])
@@ -170,6 +170,7 @@ if __name__ == '__main__':
     parser.add_argument("--stimori", type=float, default=None)
     parser.add_argument("--stimfreq", type=float, default=None)
     parser.add_argument("--csdrange", nargs=2, type=float, default=None)
+    parser.add_argument("--channels", nargs="*", default=conf['quickcsd']['channels'])
     arg = parser.parse_args()
     
     # set parameters
@@ -177,6 +178,8 @@ if __name__ == '__main__':
     h = arg.h 
     R = arg.R 
     sigma = arg.sigma
+    channels = arg.channels
+    num_ch = len(channels)
     
     # set filenames
     for fn in find_lvdfilenames(arg.rawdir, sess, rec):
@@ -190,7 +193,6 @@ if __name__ == '__main__':
     lvd_reader = lvdread.LVDReader(fn_wideband)
     header = lvd_reader.get_header()
     Fs = header['AISampleRate']
-    num_ch = header['AIUsedChannelCount']
     idx_ini = int(arg.timerange[0] * Fs)
     idx_fin = int(arg.timerange[1] * Fs)
     times = np.linspace(arg.timerange[0], arg.timerange[1], idx_fin - idx_ini, endpoint=False)
@@ -214,7 +216,7 @@ if __name__ == '__main__':
              or (arg.stimori is not None and ori[imgID-1] != arg.stimori)\
              or (arg.stimfreq is not None and freq[imgID-1] != arg.stimfreq) :
                 continue
-            data = lvd_reader.get_data(samplerange=[idx_on + idx_ini, idx_on + idx_fin])
+            data = lvd_reader.get_data(channel=channels, samplerange=[idx_on + idx_ini, idx_on + idx_fin])
             ERP += butterworth_filter(data, Fs, None, LFP_upfreq)
             MUA += butterworth_filter(np.square(butterworth_filter(data, Fs, MUA_lowfreq, None)), Fs, None, MUA_lowfreq/2)
             cnt += 1
