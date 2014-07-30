@@ -28,7 +28,7 @@ def gen_transform_from_block(method, param, datadir, sess, rec, blk, ignore=[-1]
         if not (isinstance(param, int) or isinstance(param, float)):
             raise ValueError("Specify the order of the polynomial via the argument 'param'")
         order = int(param)
-        coeffs, residues, rank, singular = polynomial_fit(ideal, actual, order)
+        coeffs, residues, rank, singular = polynomial_fit(ideal[mask_ignore], actual[mask_ignore], order)
         tf_x = polynomial(order, coeffs[:, 0])
         tf_y = polynomial(order, coeffs[:, 1])
     else:
