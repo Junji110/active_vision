@@ -16,7 +16,7 @@ from PIL import Image
 def parse_options(conffile):
     ### parse configuration file
     confparser = SafeConfigParser()
-    confparser.read("correlation_map.ini")
+    confparser.read(conffile)
 
     ### parse command line options
     optparser = OptionParser()
@@ -164,13 +164,13 @@ def embed_object(img_bg, img_obj, pos_obj, transparency=1.0, iadjust=False):
 def main():
     ### parse configuration file
     confparser = SafeConfigParser()
-    confparser.read("correlation_map.ini")
+    confparser.read("contrast_map.ini")
     bgfiledir = confparser.get("Paths", "bgfiledir")
     objfiledir = confparser.get("Paths", "objfiledir")
     
 
     ### parse command line options
-    opt = parse_options("correlation_map.ini")
+    opt = parse_options("contrast_map.ini")
     
     
     ### load image files (caution: python only accepts PNG files)
