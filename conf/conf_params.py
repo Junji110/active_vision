@@ -209,7 +209,7 @@ common_params = {
                                                                )
                                                },
                  
-                 "fv_gray_hime": {
+                 "fv_gray_hime_1": {
                                                "bgID": (
                                                         0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                                                         0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
