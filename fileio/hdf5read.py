@@ -69,7 +69,6 @@ class HDF5Reader(object):
     def get_data(self, channel=None, samplerange=None, timerange=None):
         channelnames = self.__parse_channel_argument(channel)
         datarange = self.__parse_range_argument(samplerange, timerange)
-        print datarange
         
         data = np.empty((len(channelnames), datarange[1] - datarange[0]))
         with h5py.File(self.file_path, 'r') as f:
