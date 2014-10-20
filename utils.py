@@ -4,12 +4,15 @@ import re
 import scipy.io as spio
 
 def find_filenames(datadir, subject, session, rec, filetype):
-    if filetype not in ['imginfo', 'stimtiming', 'param', 'parameter', 'task', 'daq', 'lvd', 'odml', 'hdf5']:
+    if filetype not in ['imginfo', 'stimtiming', 'param', 'parameter', 'task', 'daq', 'lvd', 'odml', 'hdf5', 'RF']:
         raise ValueError("Filetype {0} is not supported.".format(filetype))
     
     if filetype in ['daq', 'lvd', 'hdf5', 'odml']:
         searchdir = "{dir}/{sbj}/{sess}".format(dir=datadir, sbj=subject, sess=session)
         re_filename = re.compile('{sess}.*_rec{rec}.*\.{filetype}$'.format(sess=session, rec=rec, filetype=filetype))
+    elif filetype in ['RF',]:
+        searchdir = "{dir}/{sbj}/{sess}".format(dir=datadir, sbj=subject, sess=session)
+        re_filename = re.compile("{0}{1}.*".format(filetype, session))
     else:
         searchdir = "{dir}/{sbj}/{sess}/{sess}_rec{rec}".format(dir=datadir, sbj=subject, sess=session, rec=rec)
         re_filename = re.compile(".*{0}.*".format(filetype))
@@ -27,15 +30,38 @@ def find_filenames(datadir, subject, session, rec, filetype):
         return fn_found
     
 def get_imgID(stimdir, stimsetname):
-    print stimsetname
-    for i in range(1, 49):
-        fn_img = "{0}/{1}/{2}.mat".format(stimdir, stimsetname, i)
-        img_mat = spio.loadmat(fn_img, struct_as_record=False, squeeze_me=True)
-        print "{0},".format(img_mat['information'].backgroundid),
+    imgIDs = []
+    # for i in range(1, 61):
+    i_img = 1
+    while True:
+        fn_img = "{0}/{1}/{2}.mat".format(stimdir, stimsetname, i_img)
+        if os.path.exists(fn_img):
+            img_mat = spio.loadmat(fn_img, struct_as_record=False, squeeze_me=True)
+            imgIDs.append(img_mat['information'].backgroundid)
+            i_img += 1
+        else:
+            break
+    return imgIDs
 
+def get_objID(stimdir, stimsetname):
+    objIDs = []
+    # for i in range(1, 61):
+    i_img = 1
+    while True:
+        fn_img = "{0}/{1}/{2}.mat".format(stimdir, stimsetname, i_img)
+        if os.path.exists(fn_img):
+            img_mat = spio.loadmat(fn_img, struct_as_record=False, squeeze_me=True)
+            objIDs.extend(img_mat['information'].objectid)
+            i_img += 1
+        else:
+            break
+    return sorted(list(set(objIDs)))
 
 if __name__ == "__main__":
     stimdir = "C:/Users/ito/datasets/osaka/stimuli"
-#     stimsetname = "fv_random_3"
-    stimsetname = "fv_random_5_large_stripes"
-    get_imgID(stimdir, stimsetname)
+    stimsetname = "fv_gray_20140903"
+    stimsetname = "fv_scene_20140903"
+    # stimsetname = "fv_random_5_large_stripes"
+    print stimsetname
+    print get_imgID(stimdir, stimsetname)
+    print get_objID(stimdir, stimsetname)
