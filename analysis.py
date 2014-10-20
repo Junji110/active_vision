@@ -2,7 +2,7 @@ import numpy as np
 import scipy as sp
 import scipy.signal as spsig
 
-import passive_vision.tools.stats as pvstats
+import stats
 
 def butterworth_filter(signal, Fs, highpassfreq=None, lowpassfreq=None, order=4, filtfunc='filtfilt'):
     """
@@ -205,7 +205,7 @@ def phase_locking_value(binned_spike, phase, masks=None):
     if masks is not None:
         for mask in masks:
             pick = pick & mask
-    return pvstats.circ_r(phase[pick])
+    return stats.circ_r(phase[pick])
 
 
 def idx2mask(idx, n):
