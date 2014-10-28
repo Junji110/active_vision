@@ -73,7 +73,7 @@ def wavelet_transform(signal, freq, nco, Fs):
     Neurosci Meth 111:83-98 (2001).
     
     **Args**:
-    signal : 1D array_like
+    signal : 1D or 2D array_like
         Signal to be transformed
     freq : float
         Center frequency of the Morlet wavelet.
@@ -107,19 +107,28 @@ def wavelet_transform(signal, freq, nco, Fs):
    
     fft = np.fft.fft
     ifft = np.fft.ifft
-    N = len(signal)
-    # the least power of 2 greater than N
-    N_pow2 = 2 ** (int(np.log2(N)) + 1)
-    
+    ndim_signal = signal.ndim
+    if ndim_signal == 1:
+        num_ch = 1
+        N = signal.shape[0]
+    else:
+        num_ch, N = signal.shape
+
     # zero-padding to a power of 2 for efficient convolution
-    tmpdata = np.zeros(N_pow2)              
-    tmpdata[0:N] = np.asarray(signal)
+    N_pow2 = 2 ** (int(np.log2(N)) + 1)  # the least power of 2 greater than N
+    tmpdata = np.zeros((num_ch, N_pow2))
+    tmpdata[:, 0:N] = np.asarray(signal)
     
     # generate Morlet wavelet
     wavelet = morlet_wavelet(freq, nco, Fs, N_pow2)
     
     # convolution of the signal with the wavelet
-    return ifft(fft(tmpdata) * fft(wavelet))[0:N]
+    signal_wt = ifft(fft(tmpdata) * fft(wavelet))
+    if ndim_signal == 1:
+        return signal_wt[0, 0:N]
+    else:
+        return signal_wt[:, 0:N]
+
 
 
 def segment(data, idx_trig, idx_ini, idx_fin):
