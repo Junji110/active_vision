@@ -360,7 +360,7 @@ if __name__ == '__main__':
     scriptdir = os.path.abspath(os.path.dirname(__file__))
     if os.path.exists(scriptdir + "/conf.json"):
         conf = json.load(open(scriptdir + "/conf.json"))
-    eex_param = conf['eyevex_gui2']['eex_param']
+    eex_param = conf['eyevex']['eex_param']
 
     # parse command line options
     parser = ArgumentParser()
@@ -372,8 +372,8 @@ if __name__ == '__main__':
     parser.add_argument("--calib_rec", dest="calibrec")
     parser.add_argument("--calib_blk", dest="calibblk")
     parser.add_argument("--calib", nargs=3, default=None)
-    parser.add_argument("--calib_method", dest="calibmeth", default="polynomial_fit")
-    parser.add_argument("--calib_param", dest="calibparam", default=2)
+    parser.add_argument("--calib_method", dest="calibmeth", default=conf['eyevex']['calib_method'])
+    parser.add_argument("--calib_param", dest="calibparam", default=conf['eyevex']['calib_param'])
     parser.add_argument("--calib_ignore", dest="calibignore", nargs='*', type=int, default=[-1,])
     parser.add_argument("--timerange", nargs=2, type=float, default=None)
     parser.add_argument("--plot", action="store_true", default=False)
