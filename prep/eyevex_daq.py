@@ -224,7 +224,7 @@ def extract_eye_events(eyepos, eyevelo, eyeaccl, Fs, param, verbose=False):
         
     return sac, fix
 
-def plot_summary(sac, fix, eyepos, eyevelo, eyeaccl, Fs, param, timerange=None):
+def summary_plot(sac, fix, eyepos, eyevelo, eyeaccl, Fs, param):
     import matplotlib.pyplot as plt
     
     figure = plt.figure()
@@ -236,8 +236,8 @@ def plot_summary(sac, fix, eyepos, eyevelo, eyeaccl, Fs, param, timerange=None):
     ax4 = figure.add_subplot(414, sharex=ax1)
     
     # set axes range
-    ax1.set_ylim(-40, 40)
-    ax2.set_ylim(-40, 40)
+    ax1.set_ylim(-20, 20)
+    ax2.set_ylim(-20, 20)
     ax3.set_ylim(0, 600)
     ax4.set_ylim(-50000, 50000)
     
@@ -249,8 +249,6 @@ def plot_summary(sac, fix, eyepos, eyevelo, eyeaccl, Fs, param, timerange=None):
     ax4.set_xlabel('Time (sec)')
     
     t = np.arange(eyepos.shape[1]) / Fs
-    if timerange is not None:
-        t += timerange[0]
     
     ax1.plot(t, eyepos[0], lw=1.5, color='black', alpha=0.2)
     ax2.plot(t, eyepos[1], lw=1.5, color='black', alpha=0.2)
@@ -275,8 +273,6 @@ def plot_summary(sac, fix, eyepos, eyevelo, eyeaccl, Fs, param, timerange=None):
     ax4.plot(t, eyeaccl, color='black')
     ax4.axhline(y=param['sacaccl_peak_min'])
     ax4.grid()
-
-    ax4.autoscale(axis='x', tight=True)
     
     plt.show()
 
@@ -325,136 +321,105 @@ def main(eyecoil, Fs, calib_coeffs, param, datalen_max=10000000, seg_overlap=100
     else:
         return sac, fix
     
-def find_filenames(datadir, session, rec, filetype):
-    import re
-
-    if filetype not in ['imginfo', 'stimtiming', 'param', 'parameter', 'task', 'daq', 'lvd', 'odml', 'hdf5']:
-        raise ValueError("Filetype {0} is not supported.".format(filetype))
-    
-    if filetype in ['daq', 'lvd', 'hdf5', 'odml']:
-        searchdir = "{dir}/{sess}".format(dir=datadir, sess=session)
-        re_filename = re.compile('{sess}.*_rec{rec}.*\.{filetype}$'.format(sess=session, rec=rec, filetype=filetype))
-    else:
-        searchdir = "{dir}/{sess}/{sess}_rec{rec}".format(dir=datadir, sess=session, rec=rec)
-        re_filename = re.compile(".*{0}.*".format(filetype))
-        
-    filenames = os.listdir(searchdir)
-    fn_found = []
-    for fn in filenames:
-        match = re_filename.match(fn)
-        if match:
-            fn_found.append("{0}/{1}".format(searchdir, fn))
-
-    if len(fn_found) == 0:
-        raise IOError("Files of type '{0}' not found.".format(filetype))
-    else:
-        return fn_found
 
 if __name__ == '__main__':
-    import json
-    from argparse import ArgumentParser
-    import lvdread
-    import matplotlib.pyplot as plt
-
-    # load configuration file
-    scriptdir = os.path.abspath(os.path.dirname(__file__))
-    if os.path.exists(scriptdir + "/conf.json"):
-        conf = json.load(open(scriptdir + "/conf.json"))
-    eex_param = conf['eyevex_gui2']['eex_param']
-
-    # parse command line options
-    parser = ArgumentParser()
-    parser.add_argument("--datadir", default=conf['datadir'])
-    parser.add_argument("--sess", "--session")
-    parser.add_argument("--rec")
-    parser.add_argument("--data", nargs=2, default=None)
-    parser.add_argument("--calib_sess", dest="calibsess")
-    parser.add_argument("--calib_rec", dest="calibrec")
-    parser.add_argument("--calib_blk", dest="calibblk")
-    parser.add_argument("--calib", nargs=3, default=None)
-    parser.add_argument("--calib_method", dest="calibmeth", default="polynomial_fit")
-    parser.add_argument("--calib_param", dest="calibparam", default=2)
-    parser.add_argument("--calib_ignore", dest="calibignore", nargs='*', type=int, default=[-1,])
-    parser.add_argument("--timerange", nargs=2, type=float, default=None)
-    parser.add_argument("--plot", action="store_true", default=False)
-
-    arg = parser.parse_args()
-
-    # copy commandline arguments to variables
-    datadir = arg.datadir
-
-    if arg.data is None:
-        sess = arg.sess
-        rec = arg.rec
-    else:
-        sess, rec = arg.data
-
-    if arg.calib is None:
-        calib_sess = arg.calibsess
-        calib_rec = arg.calibrec
-        calib_blk = arg.calibblk
-    else:
-        calib_sess, calib_rec, calib_blk = arg.calib
-    calib_blk = int(calib_blk)
-    calib_method = arg.calibmeth
-    calib_param = arg.calibparam
-    calib_ignore = arg.calibignore
-
-    timerange = arg.timerange
-
+    import daqread
+    import eyecalib_old
+    
+    # define parameters
+    datadir = "C:/Users/ito/datasets/osaka/behavior"
+    datasess = "20130306"
+    rec = "1"
+#    datasess = "20130306"
+#    rec = "2"
+#    datasess = "20130315"
+#    rec = "1"
+#    datafile = "20130315_124319_rec1_pc3.daq"
+    calibsess = "20130306"
+    calibrec = "1"
+    eex_param = {
+                'smooth_width': 0.002,
+#                'sacamp_threshold': 1.0,
+#                'sacvelo_threshold': 50.0,
+#                'sacvelo_peak_range': [100.0, 1000.0],    # medium sensitivity
+                'sacamp_threshold': 0.1,
+                'sacvelo_threshold': 30.0,
+                'sacvelo_peak_min': 50.0,
+                'sacvelo_peak_max': 1000.0,
+                'sacaccl_peak_min': 8000.0,
+                'sacaccl_peak_max': 100000.0,
+                'sacdur_min': 0.005,
+                'sacdur_max': 1.0,
+                'fixvelo_threshold': 70.0,
+                'fixshift_threshold': 1.0,
+                'fixdur_min': 0.1,
+                'fixdur_max': 1.0,
+                }
+    #datalen_max = 2000000    # to be used for test
+    datalen_max = 10000000
+    
     # identify the name of the eyecoil data file
-    for fn in find_filenames(datadir, sess, rec, 'lvd'):
-        if 'pc3' in fn:
-            fn_eye = fn
-            break
-    else:
-        raise ValueError("Eye coil data file not found in {}".format(datadir))
-    reader_eye = lvdread.LVDReader(fn_eye)
-    param = reader_eye.get_param()
-    Fs = param['sampling_rate']
-
+    sessdir = datadir + "/" + datasess
+    filenames = os.listdir(sessdir)
+    datafile = None
+    for fn in filenames:
+        if 'rec%s_pc3' % rec in fn:
+            datafile = fn
+    if not datafile:
+        raise IOError("Eyecoil data file not found.")
+    
     # define calibration parameter
-    print "Generating eye coil signal transform functions..."
-    transform = eyecalib2.gen_transform_from_block(calib_method, calib_param, datadir, calib_sess, calib_rec, calib_blk, calib_ignore)
-    print "...transform function generated."
+    print "Defining calibration parameters..."
+    # calib_coeffs = np.array([[4.80495885e+00, 1.09999438e+01], [-4.54751460e+00, 2.17502356e+00], [6.81946928e-01, -7.37863592e+00], [-2.93593904e-02, 8.32437864e-03], [-6.96825031e-02, 8.47741602e-02], [-1.64500961e-02, -2.67035858e-01]])    # to be used for test
+    calib_coeffs = eyecalib_old.main(datadir, calibsess, calibrec, "polynomial_fit", 2.0)
+    print "...calibration parameters defined."
     print
     
     # load eyecoil signal
     print "Loading data..."
-    eyecoil = reader_eye.get_data(channel=('eyecoil_x', 'eyecoil_y'), timerange=timerange)
-    eyecoil = eyecoil.swapaxes(0, 1)
-    print "...data loaded."
+    filename = '/'.join([datadir, datasess, datafile])
+    objinfo = daqread.daqread(filename, 'info')
+    Fs = objinfo.ObjInfo['SampleRate']
+    chname = [x['ChannelName'] for x in objinfo.ObjInfo['Channel']]
+    chID = [x['Index'] for x in objinfo.ObjInfo['Channel']]
+    ch_eyecoil_x = chname.index('eyecoil_x')
+    ch_eyecoil_y = chname.index('eyecoil_y')
+    eyecoil, time_eyecoil = daqread.daqread(filename, 'data2', Channels=[chID[ch_eyecoil_x], chID[ch_eyecoil_y]])
+    print "...data loading done."
     print
     
     # extract eye events
     print "Extracting eye events..."
-    sac, fix = main(eyecoil, Fs, transform, eex_param, verbose=True)
+    sac, fix = main(eyecoil, Fs, calib_coeffs, eex_param, datalen_max=datalen_max, verbose=True)
     print "...eye event extraction done."
     print
     
-    # format eye event data
-    eye_event = np.append(sac, fix)
-    offset = timerange[0] * Fs
-    eye_event['on'] += offset
-    eye_event['off'] += offset
-    idx_sort = eye_event['on'].argsort()
-    eye_event = eye_event[idx_sort]
+    # output result
+    event = np.append(sac, fix)
     eventID = np.array([100] * len(sac) + [200] * len(fix))
+    idx_sort = event['on'].argsort()
+    event = event[idx_sort]
     eventID = eventID[idx_sort]
-
-    # save to file
-    fn_eyeevent = "{sess}_rec{rec}_eyeevent.dat".format(sess=sess, rec=rec)
-    with open(fn_eyeevent, 'w') as fd:
-        fd.write("eventID\t" + "\t".join(eye_event.dtype.names) + "\n")
-        for evid, ev in zip(eventID, eye_event):
-            output = [str(evid)] + [str(x) for x in ev]
-            fd.write('\t'.join(output) + '\n')
-    print 'Eye event data saved in {0}'.format(fn_eyeevent)
+    clk2smpl = np.arange(0, (event['off'][-1] + 1) * 4, 4)
+    
+    # convert sample count to clock count
+    for key in ['on', 'off']:
+        for i,smpl in enumerate(event[key]):
+            event[key][i] = index_nearest(clk2smpl, smpl)
+    outfile = open("%s_rec%s_eyeevent.dat" % (datasess, rec), 'w')
+    outfile.write("eventID\t" + "\t".join(event.dtype.names) + "\n")
+    for evid, ev in zip(eventID, event):
+        output = [str(evid)] + [str(x) for x in ev]
+        outfile.write('\t'.join(output) + '\n')
+    outfile.close()
 
     # summary plot
-    if arg.plot:
-        print "Generating summary plot..."
-        eyepos, eyevelo, eyeaccl = eyecoil2eyepos(eyecoil, Fs, transform, eex_param['smooth_width'])
-        plot_summary(sac, fix, eyepos, eyevelo, eyeaccl, Fs, eex_param, timerange=timerange)
-        print "...done."
-
+    print "Generating summary plot..."
+    if eyecoil.shape[0] >= datalen_max:
+        eyecoil = eyecoil[0:datalen_max]
+    eyepos, eyevelo, eyeaccl = eyecoil2eyepos(eyecoil, Fs, calib_coeffs, eex_param['smooth_width'], verbose=True)
+    sac_seg = sac[sac['off'] < datalen_max]
+    fix_seg = fix[fix['off'] < datalen_max]
+    summary_plot(sac_seg, fix_seg, eyepos, eyevelo, eyeaccl, Fs, eex_param)
+    print "...summary plot generated."
+    
