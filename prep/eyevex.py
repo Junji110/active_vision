@@ -434,7 +434,7 @@ if __name__ == '__main__':
     
     # format eye event data
     eye_event = np.append(sac, fix)
-    offset = timerange[0] * Fs
+    offset = 0 if timerange is None else timerange[0]*Fs
     eye_event['on'] += offset
     eye_event['off'] += offset
     idx_sort = eye_event['on'].argsort()
