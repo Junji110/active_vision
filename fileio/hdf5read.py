@@ -70,11 +70,12 @@ class HDF5Reader(object):
         channelnames = self.__parse_channel_argument(channel)
         datarange = self.__parse_range_argument(samplerange, timerange)
         
-        data = np.empty((len(channelnames), datarange[1] - datarange[0]))
+        data = np.zeros((len(channelnames), datarange[1] - datarange[0]))
         with h5py.File(self.file_path, 'r') as f:
             for i_ch, chname in enumerate(channelnames):
-                data[i_ch] = f['data'][chname][datarange[0]:datarange[1]]
-        
+                data_in_range = f['data'][chname][datarange[0]:datarange[1]]
+                data[i_ch][:len(data_in_range)] = data_in_range
+
         return data
 
 

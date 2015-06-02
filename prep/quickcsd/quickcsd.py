@@ -161,6 +161,7 @@ if __name__ == '__main__':
     parser.add_argument("--rawdir", default=conf['rawdir'])
     parser.add_argument("--prepdir", default=conf['prepdir'])
     parser.add_argument("--data", nargs=3, default=[20140529, 8, 1])
+#     parser.add_argument("--data", nargs=3, default=[20140804, 6, 1])
     parser.add_argument("--timerange", nargs=2, default=conf['quickcsd']['timerange'])
     parser.add_argument("--h", type=float, default=conf['quickcsd']['h'])
     parser.add_argument("--R", type=float, default=conf['quickcsd']['R'])

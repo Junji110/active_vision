@@ -110,6 +110,8 @@ if __name__ == '__main__':
     parser.add_argument("--stimfreq", type=float, default=None)
     parser.add_argument("--csdrange", nargs=2, type=float, default=None)
     parser.add_argument("--channels", nargs="*", default=conf['quicksel']['channels'])
+    parser.add_argument("--dump", type=bool, default=False)
+    parser.add_argument("--dumpdir", default=conf['quicksel']['dumpdir'])
     arg = parser.parse_args()
     
     # set parameters
@@ -122,7 +124,6 @@ if __name__ == '__main__':
         if 'pc1' in fn:
             fn_wideband = fn
             break
-#     fn_taskinfo = "{dir}/{sbj}/taskinfo/{sess}_rec{rec}_blk{blk}_taskinfo.mat".format(dir=arg.prepdir, sbj=sbj, sess=sess, rec=rec, blk=blk)
     fn_taskinfo = "{dir}/{sess}_rec{rec}_blk{blk}_taskinfo.mat".format(dir=arg.prepdir, sess=sess, rec=rec, blk=blk)
 
     # load parameters from the data file
@@ -134,7 +135,7 @@ if __name__ == '__main__':
     idx_bl_ini = int(arg.baselinerange[0] * Fs)
     idx_bl_fin = int(arg.baselinerange[1] * Fs)
 
-    # extract stimulus presentation timings and stimulus IDs
+    # extract stimulus presentation timings and stimulus image IDs
     taskinfo = spio.loadmat(fn_taskinfo, struct_as_record=False, squeeze_me=True)
     infoL = taskinfo['L']
     infoS = taskinfo['S']
@@ -142,27 +143,45 @@ if __name__ == '__main__':
     idx_stim_on = infoL.FIX_image_on_tmg[success_trials]
     idx_stim_off = infoL.FIX_image_off_tmg[success_trials]
     imgIDs = infoS.imgID[infoL.t_tgt_data[success_trials]-1]
+    num_stim = sum(len(x) for x in idx_stim_on)
     
     imgIDset = []
     for imgID in imgIDs:
         imgIDset.extend(imgID)
     imgIDset = set(imgIDset)
     
+    # extract MUA responses channel by channel
     for i_ch, chID in enumerate(channels):
+        # compute MUA from wideband signal
         data = lvd_reader.get_data(channel=[chID,])[0]
         MUA = butterworth_filter(np.square(butterworth_filter(data, Fs, MUA_lowfreq, None)), Fs, None, MUA_lowfreq/2)
-        MUAresp = {imgID: [] for imgID in imgIDset}
+
+        # extract MUA responses trial by trial
+        responses = np.empty(num_stim, dtype=[('FIX_image_on_tmg', long), ('imgID', int), ('response_mean', float), ('baseline_mean', float), ('baseline_std', float)])
+        i_stim = 0
         for i_trial, indice_on in enumerate(idx_stim_on):
-            for i_stim, idx_on in enumerate(indice_on):
-                baseline = MUA[idx_on + idx_bl_ini : idx_on + idx_bl_fin].mean()
+            for i_stim_trial, idx_on in enumerate(indice_on):
+                baseline_mean = MUA[idx_on + idx_bl_ini : idx_on + idx_bl_fin].mean()
                 baseline_std = MUA[idx_on + idx_bl_ini : idx_on + idx_bl_fin].std()
-                resp = MUA[idx_on + idx_ini : idx_on + idx_fin].mean()
-                MUAresp[imgIDs[i_trial][i_stim]].append((resp - baseline) / baseline_std)
+                response_mean = MUA[idx_on + idx_ini : idx_on + idx_fin].mean()
+                responses[i_stim] = idx_on, imgIDs[i_trial][i_stim_trial], response_mean, baseline_mean, baseline_std
+                i_stim += 1
         
+        # dump responses as a CSV file
+        if arg.dump:
+            fn_out = "{dir}/{sess}_rec{rec}_blk{blk}_{chID}_quicksel.csv".format(dir=arg.dumpdir, sess=sess, rec=rec, blk=blk, chID=chID)
+            with open(fn_out, 'w') as fd:
+                fd.write(",\t".join(responses.dtype.names) + "\n")
+                for op in responses:
+                    opstr = [str(x) for x in op]
+                    fd.write(',\t'.join(opstr) + '\n')
+        
+        # plot results
         plt.subplot(6, 4, i_ch+1)
-        for imgID, resp in MUAresp.iteritems():
-            alpha = 0.5 + (imgID % 2) * 0.5
-            plt.bar(float(imgID) - 0.5, np.mean(resp), 1.0, color='red', alpha=alpha) 
+        for imgID in imgIDset:
+            output_img = responses[responses['imgID'] == imgID]
+            resp = (output_img['response_mean'] - output_img['baseline_mean']) / output_img['baseline_std']
+            plt.bar(float(imgID) - 0.5, np.mean(resp), 1.0, color='red', alpha=0.5 + (imgID % 2) * 0.5) 
             plt.errorbar(float(imgID), np.mean(resp), np.std(resp, ddof=1)/np.sqrt(len(resp)-1), color='black')
         plt.grid()
         plt.xlim(min(imgIDset)-1, max(imgIDset)+1)
@@ -171,5 +190,6 @@ if __name__ == '__main__':
         if i_ch / 4 == 5:
             plt.xlabel("Image ID")
         if i_ch % 4 == 0:
-            plt.ylabel("MUA response\n(z-score)")
+            plt.ylabel("MUA responses\n(z-score)")
+
     plt.show()

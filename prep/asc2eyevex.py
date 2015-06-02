@@ -40,7 +40,13 @@ for sbj, sess, rec, blk, tasktype, taskID in dataset_info:
     for i_sac, sac in saccades.iterrows():
         idx_on = i_sac
         idx_off = i_sac + sac.duration
-        if np.any((idx_on < blinkdata['on']) & (blinkdata['off'] < idx_off)):
+        # reject saccades that contain a blink
+        if np.any((idx_on <= blinkdata['on']) & (blinkdata['off'] <= idx_off)):
+            continue
+        # EYELINK seems to erroneously register an saccade at the beginning of
+        # recording. Such saccades have almost zero amplitude and duration of
+        # one sample. They are rejected here.
+        if sac.x_start - sac.x_end < 10 and sac.y_start - sac.y_end < 10 and sac.duration <= 4:
             continue
         sacdata.append((idx_on, idx_off, sac.x_start, sac.y_start, sac.x_end, sac.y_end, sac.peak_velocity, 0.0))
     sacdata = np.array(sacdata, dtype=[('on', long), ('off', long), ('x_on', float), ('y_on', float), ('x_off', float), ('y_off', float), ('param1', float), ('param2', float)])
@@ -56,8 +62,8 @@ for sbj, sess, rec, blk, tasktype, taskID in dataset_info:
     # (0, 0, screen_size_x, screen_size_y) (i.e., top-left origin) to
     # (-screen_size_x/2, screen_size_y/2, screen_size_x/2, -screen_size_y/2)
     # (i.e., center origin), and convert units from pixel to degree
-    pxl2deg_x = lambda x: (x - screen_size[0]) / 2 / pxlperdeg
-    pxl2deg_y = lambda y: (-y + screen_size[1]) / 2 / pxlperdeg
+    pxl2deg_x = lambda x: (x - screen_size[0] / 2) / pxlperdeg
+    pxl2deg_y = lambda y: (-y + screen_size[1] / 2) / pxlperdeg
     sacdata['x_on'] = pxl2deg_x(sacdata['x_on'])
     sacdata['y_on'] = pxl2deg_y(sacdata['y_on'])
     sacdata['x_off'] = pxl2deg_x(sacdata['x_off'])

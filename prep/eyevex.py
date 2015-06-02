@@ -8,6 +8,7 @@ Written by Junji Ito (j.ito@fz-juelich.de) on 2013.06.18
 import os
 import time
 import numpy as np
+import scipy.signal
 
 import eyecalib2
 
@@ -99,6 +100,27 @@ def moving_average(data, smooth_len):
     # convolution of the signal with the wavelet
     return ifft(fft(tmpdata) * fft(kernel))[0:N].real + trend
 
+def eyecoil2eyepos_savgol(eyecoil, Fs, calib_coeffs, window_length=199, polyorder=2, calib_order=2, verbose=False):
+    if callable(calib_coeffs[0]) and callable(calib_coeffs[1]):
+        volt2deg_x, volt2deg_y = calib_coeffs
+    else:
+        calib_coeffs_arr = np.array(calib_coeffs).reshape((2,6)).T
+        volt2deg_x = bivariate_polynomial(calib_order, calib_coeffs_arr[:, 0])
+        volt2deg_y = bivariate_polynomial(calib_order, calib_coeffs_arr[:, 1])
+
+    # calibrate eye position
+    eyepos = np.array([volt2deg_x(eyecoil[:, 0], eyecoil[:, 1]), volt2deg_y(eyecoil[:, 0], eyecoil[:, 1])])
+    if verbose: print "Preprocessing 1/2: volt --> deg transformation done."
+
+    eyepos = scipy.signal.savgol_filter(eyepos, window_length, polyorder, deriv=0)
+    eyevelo = scipy.signal.savgol_filter(eyepos, window_length, polyorder, deriv=1, delta=1.0/Fs)
+    eyevelo_abs = np.hypot(*eyevelo)
+    eyeaccl = scipy.signal.savgol_filter(eyepos, window_length, polyorder, deriv=2, delta=1.0/Fs)
+    eyeaccl_abs = np.hypot(*eyeaccl)
+    if verbose: print "Preprocessing 2/2: smoothing and derivation done."
+
+    return eyepos, eyevelo_abs, eyeaccl_abs
+
 def eyecoil2eyepos(eyecoil, Fs, calib_coeffs, smooth_width, calib_order=2, verbose=False):
     if callable(calib_coeffs[0]) and callable(calib_coeffs[1]):
         volt2deg_x, volt2deg_y = calib_coeffs
@@ -116,7 +138,7 @@ def eyecoil2eyepos(eyecoil, Fs, calib_coeffs, smooth_width, calib_order=2, verbo
     eyepos[0] = moving_average(eyepos[0], smooth_len)
     eyepos[1] = moving_average(eyepos[1], smooth_len)
     if verbose: print "Preprocessing 2/4: smoothing done."
-    
+
     # compute eye velocity
     dx = eyepos[0, 1:] - eyepos[0, :-1]
     dy = eyepos[1, 1:] - eyepos[1, :-1]
@@ -124,7 +146,7 @@ def eyecoil2eyepos(eyecoil, Fs, calib_coeffs, smooth_width, calib_order=2, verbo
     eyevelo = np.append(eyevelo, eyevelo[-1])
     eyevelo = moving_average(eyevelo, smooth_len)
     if verbose: print "Preprocessing 3/4: eye velocity calculation done."
-    
+
     # compute eye acceleration
     eyeaccl = (eyevelo[1:] - eyevelo[:-1]) * Fs
     eyeaccl = np.append(eyeaccl, eyeaccl[-1])
@@ -238,8 +260,8 @@ def plot_summary(sac, fix, eyepos, eyevelo, eyeaccl, Fs, param, timerange=None):
     # set axes range
     ax1.set_ylim(-40, 40)
     ax2.set_ylim(-40, 40)
-    ax3.set_ylim(0, 600)
-    ax4.set_ylim(-50000, 50000)
+    ax3.set_ylim(-100, 1100)
+    ax4.set_ylim(-10000, 110000)
     
     # set axes label
     ax1.set_ylabel('X (deg)')
@@ -299,8 +321,9 @@ def main(eyecoil, Fs, calib_coeffs, param, datalen_max=10000000, seg_overlap=100
         eyecoil_seg = eyecoil[idx_ini:idx_fin]
     
         # compute eye position and its deliverables from eye coil signal
-        eyepos, eyevelo, eyeaccl = eyecoil2eyepos(eyecoil_seg, Fs, calib_coeffs, param['smooth_width'], calib_order=calib_order, verbose=verbose)
-        
+        # eyepos, eyevelo, eyeaccl = eyecoil2eyepos(eyecoil_seg, Fs, calib_coeffs, param['smooth_width'], calib_order=calib_order, verbose=verbose)
+        eyepos, eyevelo, eyeaccl = eyecoil2eyepos_savgol(eyecoil_seg, Fs, calib_coeffs, calib_order=calib_order, verbose=verbose)
+
         # extract eye events
         sac_tmp, fix_tmp = extract_eye_events(eyepos, eyevelo, eyeaccl, Fs, param, verbose=verbose)
         sac_tmp['on'] += idx_ini; sac_tmp['off'] += idx_ini
@@ -454,7 +477,38 @@ if __name__ == '__main__':
     # summary plot
     if arg.plot:
         print "Generating summary plot..."
-        eyepos, eyevelo, eyeaccl = eyecoil2eyepos(eyecoil, Fs, transform, eex_param['smooth_width'])
+        # eyepos, eyevelo, eyeaccl = eyecoil2eyepos(eyecoil, Fs, transform, eex_param['smooth_width'])
+        eyepos, eyevelo, eyeaccl = eyecoil2eyepos_savgol(eyecoil, Fs, transform)
+
+        sac_amp = np.sqrt((sac['x_off'] - sac['x_on']) ** 2 + (sac['y_off'] - sac['y_on']) ** 2)
+        sac_velo = sac['param1']
+        sac_angle = np.arctan2(sac['y_off'] - sac['y_on'], sac['x_off'] - sac['x_on'])
+
+        A = (1000.0-30.0)/9.0
+        B = 30.0
+        idx_mainseq = sac_velo < A * sac_amp + B
+
+        idx_pat = np.ones_like(sac, bool)
+        for i_sac, _ in enumerate(sac[1:]):
+            if (sac[i_sac]['on'] - sac[i_sac-1]['on'] < 1000)\
+                    and (0.9 < sac_velo[i_sac] / sac_velo[i_sac-1] < 1.1)\
+                    and (np.abs(np.exp(1j*sac_angle[i_sac]) + np.exp(1j*sac_angle[i_sac-1])) / 2 < 0.1):
+                idx_pat[i_sac] = idx_pat[i_sac-1] = False
+
+        # sac = sac[np.logical_not(idx_mainseq)]
+        sac = sac[np.logical_not(idx_pat)]
+        print "# sac: {}".format(len(sac))
+
+        # plt.subplot(211)
+        # plt.plot(eyepos[0])
+        # plt.plot(eyepos[1])
+        # plt.grid()
+        # plt.subplot(212, sharex=plt.gca())
+        # plt.plot(eyecoil[:, 0])
+        # plt.plot(eyecoil[:, 1])
+        # plt.grid()
+        # plt.show()
+
         plot_summary(sac, fix, eyepos, eyevelo, eyeaccl, Fs, eex_param, timerange=timerange)
         print "...done."
 

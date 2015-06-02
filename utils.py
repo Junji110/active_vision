@@ -6,7 +6,7 @@ import scipy.io as spio
 def find_filenames(datadir, subject, session, rec, filetype):
     if filetype not in ['imginfo', 'stimtiming', 'param', 'parameter', 'task', 'daq', 'lvd', 'odml', 'hdf5', 'RF']:
         raise ValueError("Filetype {0} is not supported.".format(filetype))
-    
+
     if filetype in ['daq', 'lvd', 'hdf5', 'odml']:
         searchdir = "{dir}/{sbj}/{sess}".format(dir=datadir, sbj=subject, sess=session)
         re_filename = re.compile('{sess}.*_rec{rec}.*\.{filetype}$'.format(sess=session, rec=rec, filetype=filetype))
@@ -16,7 +16,7 @@ def find_filenames(datadir, subject, session, rec, filetype):
     else:
         searchdir = "{dir}/{sbj}/{sess}/{sess}_rec{rec}".format(dir=datadir, sbj=subject, sess=session, rec=rec)
         re_filename = re.compile(".*{0}.*".format(filetype))
-        
+
     filenames = os.listdir(searchdir)
     fn_found = []
     for fn in filenames:
@@ -28,7 +28,7 @@ def find_filenames(datadir, subject, session, rec, filetype):
         raise IOError("Files of type '{0}' not found.".format(filetype))
     else:
         return fn_found
-    
+
 def get_imgID(stimdir, stimsetname):
     imgIDs = []
     # for i in range(1, 61):
@@ -59,9 +59,11 @@ def get_objID(stimdir, stimsetname):
 
 if __name__ == "__main__":
     stimdir = "C:/Users/ito/datasets/osaka/stimuli"
-    stimsetname = "fv_gray_20140903"
-    stimsetname = "fv_scene_20140903"
-    # stimsetname = "fv_random_5_large_stripes"
-    print stimsetname
-    print get_imgID(stimdir, stimsetname)
-    print get_objID(stimdir, stimsetname)
+    stimsetnames = (
+        "fv_psycho2_large",
+    )
+    for stimsetname in stimsetnames:
+        print stimsetname
+        print get_imgID(stimdir, stimsetname)
+        print get_objID(stimdir, stimsetname)
+        print
