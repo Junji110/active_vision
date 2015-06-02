@@ -26,7 +26,7 @@ for sbj, sess, rec, blk, tasktype, taskID in dataset_info:
     # generate csv
     task_lines = []
     task_lines.append('task')
-    task_lines.append(",\t".join(fields))
+    task_lines.append(",".join(fields))
 
     for i_on, i_off in zip(idxs_trial_on, idxs_trial_off):
         trialID = msgs.content.values[i_on]
@@ -54,7 +54,7 @@ for sbj, sess, rec, blk, tasktype, taskID in dataset_info:
                 output = map(str, [msgs.index.values[i], taskID, rec, blk, trialID, 312, stimID, sf_flg])
             else:
                 continue
-            task_lines.append(",\t".join(output))
+            task_lines.append(",".join(output))
 
     fn_task = "{dir}/{task}/{sbj}/{sbj}{rec}00{blk}{sym}_task.csv".format(
         dir=datadir, task=tasktype, sbj=sbj, rec=rec, blk=blk, sym=tasktype[0])
