@@ -6,7 +6,7 @@ import numpy as np
 sys.path.append("/users/ito/toolbox/cili")
 from cili.util import load_eyelink_dataset
 
-from prep.parameters.asc2task import *
+from parameters.asc2task import *
 
 fields = ("TIMING_CLOCK", "g_task_switch", "g_rec_no", "g_block_num", "TRIAL_NUM", "log_task_ctrl", "t_tgt_data", "SF_FLG")
 
