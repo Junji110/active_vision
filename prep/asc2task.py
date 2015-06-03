@@ -16,6 +16,17 @@ for sbj, sess, rec, blk, tasktype, taskID in dataset_info:
     samps, events = load_eyelink_dataset(fn_data)
     msgs = events.dframes['MSG']
 
+    # retrieve screen size from gaze coordinates in MSG events
+    for i_msg, msg in events.dframes['MSG'].iterrows():
+        if msg.label == "GAZE_COORDS":
+            gaze_coords = map(float, msg.content.split())
+            break
+    screen_size = (gaze_coords[2] - gaze_coords[0], gaze_coords[3] - gaze_coords[1])
+
+    # transform gaze coordinate and convert units from pixel to degree
+    samps.x_l = (samps.x_l - screen_size[0] / 2) / pxlperdeg
+    samps.y_l = (-samps.y_l + screen_size[1] / 2) / pxlperdeg
+
 
     # pick indices of trial starts and ends
     idxs_trial_on = np.where(msgs.label.values == "TRIALID")[0]
@@ -49,6 +60,13 @@ for sbj, sess, rec, blk, tasktype, taskID in dataset_info:
             elif msg_label == "FIXOFFF":
                 output = map(str, [msgs.index.values[i], taskID, rec, blk, trialID, 310, stimID, sf_flg])
             elif msg_label == "SYNCTIME":
+                # mark trials with poor calibration as failure trials
+                clkcnt_img_on = msgs.index.values[i]
+                x_img_on = samps[samps.index < clkcnt_img_on].x_l.values[-1]
+                y_img_on = samps[samps.index < clkcnt_img_on].y_l.values[-1]
+                print np.hypot(x_img_on, y_img_on)
+                if np.isnan(x_img_on) or np.isnan(y_img_on) or np.hypot(x_img_on, y_img_on) >= 1.0:
+                    sf_flg = 0
                 output = map(str, [msgs.index.values[i], taskID, rec, blk, trialID, 311, stimID, sf_flg])
             elif msg_label == "ENDTIME":
                 output = map(str, [msgs.index.values[i], taskID, rec, blk, trialID, 312, stimID, sf_flg])
