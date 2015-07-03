@@ -183,7 +183,7 @@ def extract_eye_events(eyepos, eyevelo, eyeaccl, Fs, param, verbose=False):
         
     return sac, fix
 
-def save_eye_events(fn, sac, fix, timerange, Fs):
+def save_eye_events(fn, sac, fix, timerange, Fs, param):
     # format eye event data
     eye_event = np.append(sac, fix)
     eventID = np.array([100] * len(sac) + [200] * len(fix))
@@ -220,7 +220,7 @@ def main(eyecoil, Fs, calib_coeffs, param, datalen_max=10000000, seg_overlap=100
     sacfix_buff = []
     for i_seg in range(n_seg):
         if verbose and n_seg > 1:
-            print "Processing {} of {} segments...".format(i_seg+1, n_seg)
+            print "Processing {0} of {1} segments...".format(i_seg+1, n_seg)
 
         idx_ini, idx_fin = seg_range[i_seg]
         eyecoil_seg = eyecoil[idx_ini:idx_fin]
@@ -236,7 +236,7 @@ def main(eyecoil, Fs, calib_coeffs, param, datalen_max=10000000, seg_overlap=100
         sacfix_buff.append([sac_tmp, fix_tmp])
 
         if verbose and n_seg > 1:
-            print "...Segment {} done.".format(i_seg+1)
+            print "...Segment {0} done.".format(i_seg+1)
 
     # concatenate the eye events from segments
     sacfix = [sacfix_buff[0][0], sacfix_buff[0][1]]
@@ -293,7 +293,8 @@ if __name__ == '__main__':
     parser.add_argument("--sbj", "--subject")
     parser.add_argument("--sess", "--session")
     parser.add_argument("--rec", "--recording")
-    parser.add_argument("--data", nargs=2, default=None)
+    parser.add_argument("--blk", "--block")
+    parser.add_argument("--data", nargs=3, default=None)
     parser.add_argument("--calib_sess", dest="calibsess")
     parser.add_argument("--calib_rec", dest="calibrec")
     parser.add_argument("--calib_blk", dest="calibblk")
@@ -311,9 +312,10 @@ if __name__ == '__main__':
 
     # copy commandline arguments to variables
     if arg.data is None:
-        sess, rec = arg.sess, arg.rec
+        sess, rec, blk = arg.sess, arg.rec, arg.blk
     else:
-        sess, rec = arg.data
+        sess, rec, blk = arg.data
+    blk = int(blk)
 
 
     if arg.calib is None:
@@ -326,12 +328,11 @@ if __name__ == '__main__':
     timerange = arg.timerange
 
     # identify the name of the eyecoil data file
-    for fn in find_filenames(datadir, sess, rec, 'lvd'):
-        if 'pc3' in fn:
-            fn_eye = fn
-            break
+    fn_eye = [fn for fn in find_filenames(datadir, sess, rec, 'lvd') if 'pc3' in fn]
+    if len(fn_eye) == 0:
+        raise ValueError("Eye coil data file not found in {0}".format(datadir))
     else:
-        raise ValueError("Eye coil data file not found in {}".format(datadir))
+        fn_eye = fn_eye[0]
     reader_eye = lvdread.LVDReader(fn_eye)
     param = reader_eye.get_param()
     Fs = param['sampling_rate']
@@ -359,9 +360,9 @@ if __name__ == '__main__':
     print
     
     # save eye events in a file
-    fn_eyeevent = "{dir}/{sess}_rec{rec}_eyeevent.dat".format(dir=savedir, sess=sess, rec=rec)
-    save_eye_events(fn_eyeevent, sac, fix, timerange, Fs)
-    print 'Eye event data saved in {}'.format(fn_eyeevent)
+    fn_eyeevent = "{dir}/{sess}_rec{rec}_blk{blk}_eyeevent.dat".format(dir=savedir, sess=sess, rec=rec, blk=blk)
+    save_eye_events(fn_eyeevent, sac, fix, timerange, Fs, eex_param)
+    print 'Eye event data saved in {0}'.format(fn_eyeevent)
 
     # summary plot
     if arg.plot:
