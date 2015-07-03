@@ -7,7 +7,6 @@ Written by Junji Ito (j.ito@fz-juelich.de) on 2013.09.26
 '''
 import os
 import json
-import h5py
 
 import numpy as np
 from scipy import linalg, interpolate
@@ -15,10 +14,11 @@ from scipy.io import loadmat
 import odml
 from odml.tools.xmlparser import XMLWriter, XMLReader
 
-#from active_vision.fileio import daqread
 import daqread
 import lvdread
 import hdf5read
+
+from parameters.eyecalib2 import *
 
 
 def gen_transform_from_block(method, param, datadir, sess, rec, blk, ignore=[-1]):
@@ -44,7 +44,6 @@ def gen_transform_from_block(method, param, datadir, sess, rec, blk, ignore=[-1]
 
     return tf_x, tf_y
 
-    
 def polynomial(order, coeffs):
     '''
     Return a bivariate polynomial function of given order and coefficients. For
@@ -246,7 +245,7 @@ def get_eyecalib_trialinfo(filename, blk=-1, fix_off_id=210):
     convfunc = lambda x: long(x)
     converters = {'INTERVAL': convfunc, 'TIMING_CLOCK': convfunc, 'GL_TIMER_VAL': convfunc}
     data = np.genfromtxt(filename, skip_header=1, delimiter=',', names=True, dtype=None, converters=converters)
-    
+
     if 2 not in data['g_task_switch']:
         raise ValueError("No eye calibration trials in the specified recording.")
     
@@ -254,9 +253,9 @@ def get_eyecalib_trialinfo(filename, blk=-1, fix_off_id=210):
         if 'g_block_num' not in data.dtype.names:
             raise ValueError("The task data file '{0}' does not contain block data.".format(filename))
         data = data[data['g_block_num'] == blk]
-    
+
     num_trial = data['TRIAL_NUM'].max() + 1
-    
+
     fix_tgt, fix_on, fix_off, success = [[] for dummy in range(4)]
     for i_trial in range(1, num_trial):   # trial 0 is skipped because it's not a proper trial
         data_trial = data[data['TRIAL_NUM'] == i_trial]
@@ -367,7 +366,7 @@ def extract_eyecalib_data(datadir, session, rec, blk):
     # read trial information from task file
     fn_task = find_filenames(datadir, session, rec, 'task')[0]
     fix_tgt, fix_on, fix_off, success = get_eyecalib_trialinfo(fn_task, blk, fix_off_id)
-    
+
     # read fixation positions from imginfo file
     fixpos = get_eyecalib_fixpos(fn_imginfo)
     # - take only the success trials
@@ -493,19 +492,17 @@ def plot_summary(gazepos, signal, transform, xrange, yrange, vrange, ignore, met
 if __name__ == '__main__':
     from argparse import ArgumentParser
     
-    # load configuration file
-    scriptdir = os.path.abspath(os.path.dirname(__file__))
-    if os.path.exists(scriptdir + "/conf.json"):
-        conf = json.load(open(scriptdir + "/conf.json"))
-    
     # parse command line options
     parser = ArgumentParser()
-    parser.add_argument("--datadir", default=conf['datadir'])
+    parser.add_argument("--datadir", default=datadir_default)
+    parser.add_argument("--savedir", default=savedir_default)
+    parser.add_argument("--sbj", "--subject")
     parser.add_argument("--sess", "--session")
-    parser.add_argument("--rec")
-    parser.add_argument("--blk", "--block", type=int, default=-1)
-    parser.add_argument("--method", default=conf['eyecalib']['method'])
-    parser.add_argument("--method_param", type=float, default=conf['eyecalib']['method_param'])
+    parser.add_argument("--rec", "--recording")
+    parser.add_argument("--blk", "--block")
+    parser.add_argument("--data", nargs=3, default=None)
+    parser.add_argument("--method", default=calib_method_default)
+    parser.add_argument("--method_param", type=float, default=calib_param_default)
     parser.add_argument("--ignore", nargs='*', type=int, default=[-1,])
     parser.add_argument("--nosave", action='store_false', dest="odml", default=True)
     parser.add_argument("--xrange", nargs=2, type=float, default=None)
@@ -516,9 +513,19 @@ if __name__ == '__main__':
     parser.add_argument("--eyecoil_x", nargs='*', type=float, default=None)
     parser.add_argument("--eyecoil_y", nargs='*', type=float, default=None)
     arg = parser.parse_args()
-    
+
+    datadir = "{dir}/{sbj}".format(dir=arg.datadir, sbj=arg.sbj)
+    savedir = arg.savedir
+
+    # copy commandline arguments to variables
+    if arg.data is None:
+        sess, rec, blk = arg.sess, arg.rec, arg.blk
+    else:
+        sess, rec, blk = arg.data
+    blk = int(blk)
+
     if None in (arg.eyecoil_x, arg.eyecoil_y, arg.eyepos_x, arg.eyepos_y):
-        ideal, actual = extract_eyecalib_data(arg.datadir, arg.sess, arg.rec, arg.blk)
+        ideal, actual = extract_eyecalib_data(datadir, sess, rec, blk)
     else:
         ideal = np.asarray(zip(arg.eyepos_x, arg.eyepos_y))
         actual = np.asarray(zip(arg.eyecoil_x, arg.eyecoil_y))
@@ -528,8 +535,8 @@ if __name__ == '__main__':
     coeffs, residuals, rank, s = polynomial_fit(ideal[mask_ignore], actual[mask_ignore], arg.method_param)
     
     # save the parameters and the results of fitting
-    if arg.odml is True and None not in [arg.sess, arg.rec]:
-        saveparams_odml(arg.datadir, arg.sess, arg.rec, arg.blk, arg.ignore, coeffs)
+    if arg.odml is True and None not in [sess, rec]:
+        saveparams_odml(datadir, sess, rec, blk, arg.ignore, coeffs)
     
     # output the results
     if None in (arg.xrange, arg.yrange, arg.vrange):
