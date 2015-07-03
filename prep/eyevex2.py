@@ -183,7 +183,7 @@ def extract_eye_events(eyepos, eyevelo, eyeaccl, Fs, param, verbose=False):
         
     return sac, fix
 
-def save_eye_events(fn, sac, fix, timerange, Fs, param):
+def save_eye_events(fn, sac, fix, samplerange, param):
     # format eye event data
     eye_event = np.append(sac, fix)
     eventID = np.array([100] * len(sac) + [200] * len(fix))
@@ -191,13 +191,15 @@ def save_eye_events(fn, sac, fix, timerange, Fs, param):
     eye_event = eye_event[idx_sort]
     eventID = eventID[idx_sort]
 
-    offset = timerange[0] * Fs if timerange is not None else 0
+    offset = samplerange[0]
     eye_event['on'] += offset
     eye_event['off'] += offset
 
     # save to file
     with open(fn, 'w') as fd:
-        fd.write("eventID\t" + "\t".join(eye_event.dtype.names) + "\n")
+        fd.write("eventID\t{0}\n".format("\t".join(eye_event.dtype.names)))
+        for key, val in param.items():
+            fd.write("# {0}: {1}\n".format(key, val))
         for evid, ev in zip(eventID, eye_event):
             output = [str(evid)] + [str(x) for x in ev]
             fd.write('\t'.join(output) + '\n')
@@ -286,6 +288,29 @@ if __name__ == '__main__':
         else:
             return fn_found
 
+    def load_task(fn_task, blk):
+        convfunc = lambda x: long(x)
+        converters = {'INTERVAL': convfunc, 'TIMING_CLOCK': convfunc, 'GL_TIMER_VAL': convfunc}
+        taskdata = np.genfromtxt(fn_task, skip_header=1, delimiter=',', names=True, dtype=None, converters=converters)
+        blockdata = taskdata[taskdata['g_block_num'] == blk]
+
+        evID = blockdata['log_task_ctrl']
+        evtime = blockdata['TIMING_CLOCK']
+        trial = blockdata['TRIAL_NUM']
+
+        num_trials = max(trial)
+        success = []
+        stimID = []
+        for i_trial in range(num_trials):
+            trialID = i_trial + 1
+            trialdata = blockdata[blockdata['TRIAL_NUM'] == trialID]
+            success.append(trialdata[-1]['SF_FLG'])
+            stimID.append(trialdata[-1]['t_tgt_data'])
+
+        events = np.array(zip(evID, evtime, trial), dtype=[('evID', int), ('evtime', long), ('trial', int)])
+        param = dict(num_trials=num_trials, success=success, stimID=stimID)
+        return events, param
+
     # parse command line options
     parser = ArgumentParser()
     parser.add_argument("--datadir", default=datadir_default)
@@ -317,7 +342,6 @@ if __name__ == '__main__':
         sess, rec, blk = arg.data
     blk = int(blk)
 
-
     if arg.calib is None:
         calib_sess, calib_rec, calib_blk = arg.calibsess, arg.calibrec, arg.calibblk
     else:
@@ -337,6 +361,14 @@ if __name__ == '__main__':
     param = reader_eye.get_param()
     Fs = param['sampling_rate']
 
+    # define sample range
+    fn_task = find_filenames(datadir, sess, rec, 'task')[0]
+    task_events, task_param = load_task(fn_task, blk)
+    samplerange = task_events['evtime'][[0, -1]]
+    if timerange is not None:
+        samplerange[0] = samplerange[0] + long(timerange[0] * Fs)
+        samplerange[1] = samplerange[0] + long(timerange[1] * Fs)
+
     # define calibration parameter
     print "Generating eye coil signal transform functions..."
     transform = eyecalib2.gen_transform_from_block(calib_method, calib_param, datadir, calib_sess, calib_rec, calib_blk, calib_ignore)
@@ -345,7 +377,7 @@ if __name__ == '__main__':
     
     # load eyecoil signal
     print "Loading data..."
-    eyecoil = reader_eye.get_data(channel=('eyecoil_x', 'eyecoil_y'), timerange=timerange)
+    eyecoil = reader_eye.get_data(channel=('eyecoil_x', 'eyecoil_y'), samplerange=samplerange)
     eyecoil = eyecoil.swapaxes(0, 1)
     print "...data loaded."
     print
@@ -361,7 +393,16 @@ if __name__ == '__main__':
     
     # save eye events in a file
     fn_eyeevent = "{dir}/{sess}_rec{rec}_blk{blk}_eyeevent.dat".format(dir=savedir, sess=sess, rec=rec, blk=blk)
-    save_eye_events(fn_eyeevent, sac, fix, timerange, Fs, eex_param)
+    params = {
+        'subject': arg.sbj,
+        'session': sess, 'recording': rec, 'block': blk,
+        'calib_sess': calib_sess, 'calib_rec': calib_rec, 'calib_blk': calib_blk,
+        'calib_method': calib_method, 'calib_param': calib_param,
+        'calib_ignore': calib_ignore,
+        'sampling_rate': Fs,
+    }
+    params.update(eex_param)
+    save_eye_events(fn_eyeevent, sac, fix, samplerange, params)
     print 'Eye event data saved in {0}'.format(fn_eyeevent)
 
     # summary plot
