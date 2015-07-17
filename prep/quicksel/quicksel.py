@@ -101,7 +101,8 @@ if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument("--rawdir", default=conf['rawdir'])
     parser.add_argument("--prepdir", default=conf['prepdir'])
-    parser.add_argument("--data", nargs=3, default=[20140804, 4, 1])
+    parser.add_argument("--data", nargs=3, default=[20150714, 4, 1])
+    parser.add_argument("--pc", type=int, default=2)
     parser.add_argument("--resprange", nargs=2, default=conf['quicksel']['resprange'])
     parser.add_argument("--baselinerange", nargs=2, default=conf['quicksel']['baselinerange'])
     parser.add_argument("--smooth", type=bool, default=False)
@@ -121,9 +122,11 @@ if __name__ == '__main__':
     
     # set filenames
     for fn in find_lvdfilenames(arg.rawdir, sess, rec):
-        if 'pc1' in fn:
+        if 'pc{0}'.format(arg.pc) in fn:
             fn_wideband = fn
             break
+    else:
+        raise IOError("Data file for {sess}_rec{rec}_blk{blk}_pc{pc} not found in {dir}".format(sess=sess, rec=rec, blk=blk, pc=arg.pc, dir=arg.rawdir))
     fn_taskinfo = "{dir}/{sess}_rec{rec}_blk{blk}_taskinfo.mat".format(dir=arg.prepdir, sess=sess, rec=rec, blk=blk)
 
     # load parameters from the data file
@@ -161,6 +164,9 @@ if __name__ == '__main__':
         i_stim = 0
         for i_trial, indice_on in enumerate(idx_stim_on):
             for i_stim_trial, idx_on in enumerate(indice_on):
+                if np.isnan(idx_on):
+                    continue
+                idx_on = long(idx_on)
                 baseline_mean = MUA[idx_on + idx_bl_ini : idx_on + idx_bl_fin].mean()
                 baseline_std = MUA[idx_on + idx_bl_ini : idx_on + idx_bl_fin].std()
                 response_mean = MUA[idx_on + idx_ini : idx_on + idx_fin].mean()

@@ -21,7 +21,7 @@ def find_lvdfilenames(datadir, session, rec):
             fn_found.append("{0}/{1}".format(datadir, fn))
     if len(fn_found) == 0:
         raise IOError("LVD File not found.")
-    
+
     return fn_found
 
 def butterworth_filter(signal, Fs, highpassfreq=None, lowpassfreq=None, order=4, filtfunc='filtfilt'):
@@ -160,8 +160,8 @@ if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument("--rawdir", default=conf['rawdir'])
     parser.add_argument("--prepdir", default=conf['prepdir'])
-    parser.add_argument("--data", nargs=3, default=[20140529, 8, 1])
-#     parser.add_argument("--data", nargs=3, default=[20140804, 6, 1])
+    parser.add_argument("--data", nargs=3, default=[20150714, 4, 1])
+    parser.add_argument("--pc", type=int, default=1)
     parser.add_argument("--timerange", nargs=2, default=conf['quickcsd']['timerange'])
     parser.add_argument("--h", type=float, default=conf['quickcsd']['h'])
     parser.add_argument("--R", type=float, default=conf['quickcsd']['R'])
@@ -184,11 +184,20 @@ if __name__ == '__main__':
     
     # set filenames
     for fn in find_lvdfilenames(arg.rawdir, sess, rec):
-        if 'pc1' in fn:
+        if 'pc{0}'.format(arg.pc) in fn:
             fn_wideband = fn
             break
-#     fn_taskinfo = "{dir}/{sbj}/taskinfo/{sess}_rec{rec}_blk{blk}_taskinfo.mat".format(dir=arg.prepdir, sbj=sbj, sess=sess, rec=rec, blk=blk)
+    else:
+        raise IOError("Data file for {sess}_rec{rec}_blk{blk}_pc{pc} not found in {dir}".format(sess=sess, rec=rec, blk=blk, pc=arg.pc, dir=arg.rawdir))
     fn_taskinfo = "{dir}/{sess}_rec{rec}_blk{blk}_taskinfo.mat".format(dir=arg.prepdir, sess=sess, rec=rec, blk=blk)
+
+    # extract stimulus presentation timings and stimulus IDs
+    taskinfo = spio.loadmat(fn_taskinfo, struct_as_record=False, squeeze_me=True)
+    infoL = taskinfo['L']
+    infoS = taskinfo['S']
+    success_trials = np.where(infoL.SF == 1)
+    idx_stim_on = infoL.FIX_image_on_tmg[success_trials]
+    imgIDs = infoS.imgID[infoL.t_tgt_data[success_trials]-1]
 
     # load parameters from the data file
     lvd_reader = lvdread.LVDReader(fn_wideband)
@@ -198,20 +207,15 @@ if __name__ == '__main__':
     idx_fin = int(arg.timerange[1] * Fs)
     times = np.linspace(arg.timerange[0], arg.timerange[1], idx_fin - idx_ini, endpoint=False)
 
-    # extract stimulus presentation timings and stimulus IDs
-    taskinfo = spio.loadmat(fn_taskinfo, struct_as_record=False, squeeze_me=True)
-    infoL = taskinfo['L']
-    infoS = taskinfo['S']
-    success_trials = np.where(infoL.SF == 1)
-    idx_stim_on = infoL.FIX_image_on_tmg[success_trials]
-    imgIDs = infoS.imgID[infoL.t_tgt_data[success_trials]-1]
-    
     # compute event triggered average LFP
     ERP = np.zeros((num_ch, idx_fin - idx_ini))
     MUA = np.zeros((num_ch, idx_fin - idx_ini))
     cnt = 0
     for i_trial, indice_on in enumerate(idx_stim_on):
         for i_stim, idx_on in enumerate(indice_on):
+            if np.isnan(idx_on):
+                continue
+            idx_on = long(idx_on)
             imgID = imgIDs[i_trial][i_stim]
             if (arg.stimsize is not None and size[imgID-1] != arg.stimsize)\
              or (arg.stimori is not None and ori[imgID-1] != arg.stimori)\
