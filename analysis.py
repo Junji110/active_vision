@@ -72,7 +72,6 @@ def butterworth_filter(signal, Fs, highpassfreq=None, lowpassfreq=None, order=4,
         
     return ffunc(b, a, signal)
 
-
 def wavelet_transform(signal, freq, nco, Fs):
     '''
     Compute the wavelet transform of a given signal with Morlet mother wavelet.
@@ -135,8 +134,6 @@ def wavelet_transform(signal, freq, nco, Fs):
         return signal_wt[0, 0:N]
     else:
         return signal_wt[:, 0:N]
-
-
 
 def segment(data, idx_trig, idx_ini, idx_fin):
     idx_pick = []
@@ -208,7 +205,6 @@ def bin_spike_train(spk, bin_width, timerange=(None, None), bin_step=None, clip=
 
     return spike_counts, ts_left + bin_width / 2
 
-
 def period_histogram(binned_spike, phase, num_phasebin, masks=None):
     pick = binned_spike.astype(bool)
     if masks is not None:
@@ -222,7 +218,6 @@ def phase_locking_value(binned_spike, phase, masks=None):
         for mask in masks:
             pick = pick & mask
     return stats.circ_r(phase[pick])
-
 
 def idx2mask(idx, n):
     if np.max(idx) >= n:
@@ -263,7 +258,6 @@ def event_mask(idx_ev, idx_range, masklen):
     for i in idx_ev:
         idx.extend(range(i + idx_range[0], i + idx_range[1]))
     return idx2mask(idx, masklen)
-
 
 def estimateCSD(LFP, h, R, sigma):
     '''
@@ -306,7 +300,6 @@ def estimateCSD(LFP, h, R, sigma):
     
     # solve the inverse problem of LFP = F * CSD
     return np.linalg.solve(F, LFP)
-
 
 def smoothing_matrix_3p(N_ch):
     smthmat = np.zeros((N_ch, N_ch))
