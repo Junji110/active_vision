@@ -360,14 +360,21 @@ if __name__ == '__main__':
     reader_eye = lvdread.LVDReader(fn_eye)
     param = reader_eye.get_param()
     Fs = param['sampling_rate']
+    data_length = param['data_length']
 
     # define sample range
-    fn_task = find_filenames(datadir, sess, rec, 'task')[0]
-    task_events, task_param = load_task(fn_task, blk)
-    samplerange = task_events['evtime'][[0, -1]]
-    if timerange is not None:
-        samplerange[0] = samplerange[0] + long(timerange[0] * Fs)
-        samplerange[1] = samplerange[0] + long(timerange[1] * Fs)
+    if blk == 0:
+        if timerange is not None:
+            samplerange = np.array((timerange[0]*Fs, timerange[1]*Fs), long)
+        else:
+            samplerange = np.array((0, data_length), long)
+    else:
+        fn_task = find_filenames(datadir, sess, rec, 'task')[0]
+        task_events, task_param = load_task(fn_task, blk)
+        samplerange = task_events['evtime'][[0, -1]]
+        if timerange is not None:
+            samplerange[0] = samplerange[0] + long(timerange[0]*Fs)
+            samplerange[1] = samplerange[0] + long(timerange[1]*Fs)
 
     # define calibration parameter
     print "Generating eye coil signal transform functions..."
