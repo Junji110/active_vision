@@ -371,10 +371,10 @@ if __name__ == '__main__':
     else:
         fn_task = find_filenames(datadir, sess, rec, 'task')[0]
         task_events, task_param = load_task(fn_task, blk)
-        samplerange = task_events['evtime'][[0, -1]]
+        samplerange = task_events['evtime'][[0, -2]]
         if timerange is not None:
-            samplerange[0] = samplerange[0] + long(timerange[0]*Fs)
             samplerange[1] = samplerange[0] + long(timerange[1]*Fs)
+            samplerange[0] = samplerange[0] + long(timerange[0]*Fs)
 
     # define calibration parameter
     print "Generating eye coil signal transform functions..."
