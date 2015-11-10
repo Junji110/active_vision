@@ -50,6 +50,7 @@ class odMLFactory(object):
             sect.remove(sect.properties[prop['name']])
         elif strict is True:
             raise ValueError("Property '{0}' does not exist in section '{1}'.".format(prop['name'], sect.name))
+        print prop
         sect.append(odml.Property(**prop))
         
     def __gen_section(self, name, parent=''):
@@ -293,9 +294,9 @@ def matdata2value(matdata):
         dtype = type(np.asscalar(matdata)).__name__
         ndim = 0
     elif matdata.shape[0] == 1:
-        value = matdata[0, 0]
+        value = matdata[0, :].tolist()
         dtype = type(np.asscalar(matdata[0, 0])).__name__
-        ndim = 0
+        ndim = 1
     elif matdata.shape[1] == 1:
         value = matdata[:, 0].tolist()
         dtype = type(np.asscalar(matdata[0])).__name__
