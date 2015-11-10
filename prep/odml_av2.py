@@ -278,7 +278,7 @@ def matdata2value(matdata):
     # in matlab data structure different data types are stored in arrays of different shapes
     # string: [1,] array
     # number: [1, 1] array
-    # n-list: [n, 1] array
+    # n-list: [n, 1] or [1, n] array
     # (m, n)-list: [m, n] array
     if matdata.size == 0:
         value = "(*empty*)"
@@ -288,9 +288,13 @@ def matdata2value(matdata):
         value = matdata[0]
         dtype = 'string'
         ndim = -1
-    elif matdata.shape[0] == 1:
+    elif matdata.shape == (1, 1):
         value = matdata[0, 0]
         dtype = type(np.asscalar(matdata)).__name__
+        ndim = 0
+    elif matdata.shape[0] == 1:
+        value = matdata[0, 0]
+        dtype = type(np.asscalar(matdata[0, 0])).__name__
         ndim = 0
     elif matdata.shape[1] == 1:
         value = matdata[:, 0].tolist()
