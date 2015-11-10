@@ -50,7 +50,6 @@ class odMLFactory(object):
             sect.remove(sect.properties[prop['name']])
         elif strict is True:
             raise ValueError("Property '{0}' does not exist in section '{1}'.".format(prop['name'], sect.name))
-        print prop
         sect.append(odml.Property(**prop))
         
     def __gen_section(self, name, parent=''):
