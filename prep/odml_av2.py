@@ -197,7 +197,9 @@ def load_imginfo(datadir, session, rec):
         t_info = imginfo['t_info'][0,0]
         for name in t_info.dtype.names:
             value, dtype, ndim = matdata2value(t_info[name])
-            if ndim == 2:
+            if dtype == "ndarray":
+                continue
+            elif ndim == 2:
                 for i, val in enumerate(value):
                     propname = "blk{0}_{1}{2}".format(block, name, i+1)
                     props[sectname].append({"name": propname, "value": val, "unit": "", "dtype": dtype})
