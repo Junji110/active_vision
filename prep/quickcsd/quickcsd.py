@@ -140,6 +140,28 @@ def smoothing_matrix_3p(N_ch):
             smthmat[ch][ch-1:ch+2] = [1, 2, 1]
     return smthmat / 4.
 
+def interpolation_matrix(N_ch, badch):
+    '''
+    Interpolate values in bad channels keeping the 2nd derivative smooth.
+    NOTE: bad channels must be separated at least by 2 channels.
+    '''
+    if not (0 <= min(badch) and max(badch) < N_ch):
+        raise ValueError("Bad channel ID must be within the range of [0, %d]" % N_ch)
+
+    itplmat = np.eye(N_ch)
+    for ch in badch:
+        if ch == 0:
+            itplmat[ch][0:3] = [0., 2., -1.]
+        elif ch == 1:
+            itplmat[ch][0:4] = [1./3, 0., 1., -1./3]
+        elif ch == N_ch - 2:
+            itplmat[ch][N_ch-4:N_ch] = [-1./3, 1., 0., 1./3]
+        elif ch == N_ch - 1:
+            itplmat[ch][N_ch-3:N_ch] = [-1., 2., 0.]
+        else:
+            itplmat[ch][ch-2:ch+3] = [-1./6, 2./3, 0, 2./3, -1./6]
+    return itplmat
+
 
 if __name__ == '__main__':
     from argparse import ArgumentParser
@@ -172,6 +194,7 @@ if __name__ == '__main__':
     parser.add_argument("--stimfreq", type=float, default=None)
     parser.add_argument("--csdrange", nargs=2, type=float, default=None)
     parser.add_argument("--channels", nargs="*", default=conf['quickcsd']['channels'])
+    parser.add_argument("--badchannel", nargs="*", type=int, default=[])
     arg = parser.parse_args()
     
     # set parameters
@@ -227,7 +250,11 @@ if __name__ == '__main__':
             cnt += 1
     ERP = ERP / cnt
     MUA = MUA / cnt
-    
+    if len(arg.badchannel) > 0:
+        intpol_mat = interpolation_matrix(num_ch, arg.badchannel)
+        ERP = np.dot(intpol_mat, ERP)
+        MUA = np.dot(intpol_mat, MUA)
+
     ### compute CSD
     CSD = estimateCSD(ERP, h, R, sigma)
     if arg.smooth:
@@ -239,38 +266,39 @@ if __name__ == '__main__':
         csdrange = arg.csdrange
 
     # plot results
-    plt.subplot(141)
+    fig = plt.figure()
+    ax_ERP = fig.add_subplot(141)
     scale = ERP.std() * 2
-    for i_ch, chdata in enumerate(data):
-        plt.plot(times, ERP[i_ch] / scale - i_ch, color='black', alpha=0.5)
-    plt.xlim(arg.timerange)
-    plt.xlabel("Time from stimulus onset (s)")
-    plt.ylim(-num_ch, 1)
-    plt.ylabel("Channel ID")
-    plt.grid()
-    plt.title("Local field potential (< {0:.1f} Hz)".format(LFP_upfreq))
+    for i_ch in range(num_ch):
+        ax_ERP.plot(times, ERP[i_ch] / scale - i_ch, color='black', alpha=0.5)
+    ax_ERP.set_xlim(arg.timerange)
+    ax_ERP.set_xlabel("Time from stimulus onset (s)")
+    ax_ERP.set_ylim(-num_ch, 1)
+    ax_ERP.set_ylabel("Channel ID")
+    ax_ERP.grid()
+    ax_ERP.set_title("Local field potential (< {0:.1f} Hz)".format(LFP_upfreq))
 
-    plt.subplot(142)
+    ax_MUA = fig.add_subplot(142, sharex=ax_ERP, sharey=ax_ERP)
     baseline = MUA.mean()
     scale = MUA.std() * 4
-    for i_ch, chdata in enumerate(data):
-        plt.plot(times, (MUA[i_ch] - baseline) / scale - i_ch, color='black', alpha=0.5)
-    plt.xlim(arg.timerange)
-    plt.xlabel("Time from stimulus onset (s)")
-    plt.ylim(-num_ch, 1)
-    plt.ylabel("Channel ID")
-    plt.grid()
-    plt.title("Multi unit activity (> {0:.1f} Hz power)".format(MUA_lowfreq))
+    for i_ch in range(num_ch):
+        ax_MUA.plot(times, (MUA[i_ch] - baseline) / scale - i_ch, color='black', alpha=0.5)
+    ax_MUA.set_xlim(arg.timerange)
+    ax_MUA.set_xlabel("Time from stimulus onset (s)")
+    ax_MUA.set_ylim(-num_ch, 1)
+    ax_MUA.set_ylabel("Channel ID")
+    ax_MUA.grid()
+    ax_MUA.set_title("Multi unit activity (> {0:.1f} Hz power)".format(MUA_lowfreq))
 
-    plt.subplot(143)
-    X, Y = np.meshgrid(times, range(num_ch+1))
-    CSDplot = plt.pcolormesh(X, Y, CSD, vmin=csdrange[0], vmax=csdrange[1], cmap='jet_r')
-    plt.xlim(arg.timerange)
-    plt.xlabel("Time from stimulus onset (s)")
-    plt.ylim(num_ch, 0)
-    plt.ylabel("Channel ID")
-    plt.grid()
-    plt.title("Current source density")
+    ax_CSD = fig.add_subplot(143, sharex=ax_ERP, sharey=ax_ERP)
+    X, Y = np.meshgrid(times, np.arange(0.5, -num_ch-0.5, -1))
+    CSDplot = ax_CSD.pcolormesh(X, Y, CSD, vmin=csdrange[0], vmax=csdrange[1], cmap='jet_r')
+    ax_CSD.set_xlim(arg.timerange)
+    ax_CSD.set_xlabel("Time from stimulus onset (s)")
+    ax_CSD.set_ylim(-num_ch, 1)
+    ax_CSD.set_ylabel("Channel ID")
+    ax_CSD.grid()
+    ax_CSD.set_title("Current source density")
 
     plt.subplot(1, 40, 31)
     cbar = plt.colorbar(CSDplot, cax=plt.gca())
