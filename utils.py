@@ -175,6 +175,108 @@ def load_imgmat_human(stimsetdir, imgIDs, tasktype="Free"):
 
     return objID, objpos, objsize, bgID, objdeg, objnum
 
+def get_eyeevent_info(eye_events, stiminfo, task_events, param, minlat=0, objdeg=None, objnum=None, pairing=None):
+    objID, objpos, objsize, bgID, objdeg_stim, objnum_stim = stiminfo
+
+    fixinfo = {'trialID': [], 'imgID': [], 'bgID': [], 'on': [], 'off': [], 'dur': [], 'x': [], 'y': [], 'objID': [], 'obj_dist': [], 'obj_pos_x': [], 'obj_pos_y': []}
+    sacinfo = {'trialID': [], 'imgID': [], 'bgID': [], 'on': [], 'off': [], 'dur': [], 'x_on': [], 'y_on': [], 'x_off': [], 'y_off': [], 'amp': [], 'velo': [], 'accl': [], 'objID_on': [], 'objID_off': [], 'obj_dist_on': [], 'obj_dist_off': [], 'obj_pos_x_on': [], 'obj_pos_y_on': [], 'obj_pos_x_off': [], 'obj_pos_y_off': []}
+
+    mask_fix = eye_events['eventID'] == 200
+    mask_sac = eye_events['eventID'] == 100
+
+    for i_trial in range(param['num_trials']):
+        # reject failure trials
+        if param['success'][i_trial] <= 0:
+            continue
+
+        trialID = i_trial + 1
+        imgID = param['stimID'][trialID-1]
+        taskev_trial = task_events[task_events['trial'] == trialID]
+
+        # reject trials with non-specified object size and/or object number
+        if objdeg is not None and objdeg_stim[imgID] != objdeg:
+            continue
+        if objnum is not None and objnum_stim[imgID] != objnum:
+            continue
+
+        # reject trials with missing image-onset or offset events
+        if (taskev_trial['evID'] != 311).all() or (taskev_trial['evID'] != 312).all():
+            continue
+
+        # pick up fixations during the free viewing period
+        clkcnt_img_on = taskev_trial['evtime'][taskev_trial['evID'] == 311][0]
+        clkcnt_img_off = taskev_trial['evtime'][taskev_trial['evID'] == 312][0]
+        mask_fv = (clkcnt_img_on + minlat <= eye_events['on']) & (eye_events['on'] < clkcnt_img_off)
+        fix_trial = eye_events[mask_fix & mask_fv]
+
+        # store fixation parameters in the buffer
+        fixinfo['trialID'].extend([trialID] * len(fix_trial))
+        fixinfo['imgID'].extend([imgID] * len(fix_trial))
+        fixinfo['bgID'].extend([bgID[imgID]] * len(fix_trial))
+        fixinfo['on'].extend(fix_trial['on'] - clkcnt_img_on)
+        fixinfo['off'].extend(fix_trial['off'] - clkcnt_img_on)
+        fixinfo['dur'].extend(fix_trial['off'] - fix_trial['on'])
+
+        fixpos = np.array((fix_trial['param1'], fix_trial['param2'])).swapaxes(0, 1)
+        fixinfo['x'].extend(fixpos[:, 0])
+        fixinfo['y'].extend(fixpos[:, 1])
+
+        obj_dist_all = np.hypot(*np.rollaxis(fixpos[:, None, :] - objpos[imgID][None, :, :], -1))
+        fixinfo['obj_dist'].extend(obj_dist_all.min(axis=1))
+        argmin = obj_dist_all.argmin(axis=1)
+        fixinfo['objID'].extend(objID[imgID][argmin])
+        fixinfo['obj_pos_x'].extend(objpos[imgID][argmin, 0])
+        fixinfo['obj_pos_y'].extend(objpos[imgID][argmin, 1])
+
+        # pick up saccades during the free viewing period
+        if pairing is None:
+            sac_trial = eye_events[mask_sac & mask_fv]
+        else:
+            idx_fix = np.where(mask_fix & mask_fv)[0]
+            mask_sac_paired = np.zeros_like(eye_events, bool)
+            if pairing == "sacfix":
+                mask_sac_paired[idx_fix - 1] = True
+            elif pairing == "fixsac":
+                mask_sac_paired[idx_fix + 1] = True
+            else:
+                raise ValueError("pairing must be either 'sacfix' or 'fixsac'")
+            sac_trial = eye_events[mask_sac_paired & mask_fv]
+
+        # store saccade parameters in the buffer
+        sacinfo['trialID'].extend([trialID] * len(sac_trial))
+        sacinfo['imgID'].extend([imgID] * len(sac_trial))
+        sacinfo['bgID'].extend([bgID[imgID]] * len(sac_trial))
+        sacinfo['on'].extend(sac_trial['on'] - clkcnt_img_on)
+        sacinfo['off'].extend(sac_trial['off'] - clkcnt_img_on)
+        sacinfo['dur'].extend(sac_trial['off'] - sac_trial['on'])
+        sacinfo['velo'].extend(sac_trial['param1'])
+        sacinfo['accl'].extend(sac_trial['param2'])
+
+        sacpos_on = np.array((sac_trial['x_on'], sac_trial['y_on'])).swapaxes(0, 1)
+        sacpos_off = np.array((sac_trial['x_off'], sac_trial['y_off'])).swapaxes(0, 1)
+        sacinfo['x_on'].extend(sacpos_on[:, 0])
+        sacinfo['y_on'].extend(sacpos_on[:, 1])
+        sacinfo['x_off'].extend(sacpos_off[:, 0])
+        sacinfo['y_off'].extend(sacpos_off[:, 1])
+        sacinfo['amp'].extend(np.hypot(sacpos_off[:, 0]-sacpos_on[:, 0], sacpos_off[:, 1]-sacpos_on[:, 1]))
+
+        obj_dist_on_all = np.hypot(*np.rollaxis(sacpos_on[:, None, :] - objpos[imgID][None, :, :], -1))
+        sacinfo['obj_dist_on'].extend(obj_dist_on_all.min(axis=1))
+        argmin_on = obj_dist_on_all.argmin(axis=1)
+        sacinfo['objID_on'].extend(objID[imgID][argmin_on])
+        sacinfo['obj_pos_x_on'].extend(objpos[imgID][argmin_on, 0])
+        sacinfo['obj_pos_y_on'].extend(objpos[imgID][argmin_on, 1])
+
+        obj_dist_off_all = np.hypot(*np.rollaxis(sacpos_off[:, None, :] - objpos[imgID][None, :, :], -1))
+        sacinfo['obj_dist_off'].extend(obj_dist_off_all.min(axis=1))
+        argmin_off = obj_dist_off_all.argmin(axis=1)
+        sacinfo['objID_off'].extend(objID[imgID][argmin_off])
+        sacinfo['obj_pos_x_off'].extend(objpos[imgID][argmin_off, 0])
+        sacinfo['obj_pos_y_off'].extend(objpos[imgID][argmin_off, 1])
+
+    return sacinfo, fixinfo
+
+
 if __name__ == "__main__":
     stimdir = "C:/Users/ito/datasets/osaka/stimuli"
     stimsetnames = (
