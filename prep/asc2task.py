@@ -74,7 +74,8 @@ for sbj, sess, rec, blk, tasktype, taskID in dataset_info:
                 continue
             task_lines.append(",".join(output))
 
-    fn_task = "{dir}/{task}/{sbj}/{sbj}{rec}00{blk}{sym}_task.csv".format(
+    fn_task = "{dir}/{sbj}/{sbj}{rec}00{blk}{sym}_task.csv".format(
         dir=datadir, task=tasktype, sbj=sbj, rec=rec, blk=blk, sym=tasktype[0])
     with open(fn_task, "w") as f:
         f.write("\n".join(task_lines))
+    print "Task data saved as {}".format(fn_task)
