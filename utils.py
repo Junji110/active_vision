@@ -63,7 +63,10 @@ def load_task(fn_task, blk=0):
     convfunc = lambda x: long(x)
     converters = {'INTERVAL': convfunc, 'TIMING_CLOCK': convfunc, 'GL_TIMER_VAL': convfunc}
     taskdata = np.genfromtxt(fn_task, skip_header=1, delimiter=',', names=True, dtype=None, converters=converters)
-    blockdata = taskdata[taskdata['g_block_num'] == blk]
+    if blk == 0:
+        blockdata = taskdata
+    else:
+        blockdata = taskdata[taskdata['g_block_num'] == blk]
 
     evID = blockdata['log_task_ctrl']
     evtime = blockdata['TIMING_CLOCK']
