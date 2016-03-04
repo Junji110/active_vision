@@ -175,6 +175,25 @@ def load_imgmat_human(stimsetdir, imgIDs, tasktype="Free"):
 
     return objID, objpos, objsize, bgID, objdeg, objnum
 
+def get_stiminfo(species, stimsetdir, imgIDs, tasktype, stim_size=None, pxlperdeg=None):
+    if species == 'Human':
+        load_imgmat = load_imgmat_human
+    else:
+        load_imgmat = load_imgmat_monkey
+    objID, objpos, objsize, bgID, objdeg, objnum = load_imgmat(stimsetdir, imgIDs, tasktype)
+
+    if stim_size is not None:
+        for imgID in imgIDs:
+            objpos[imgID][:, 0] = objpos[imgID][:, 0] - stim_size[species][0] / 2
+            objpos[imgID][:, 1] = -objpos[imgID][:, 1] + stim_size[species][1] / 2
+
+    if pxlperdeg is not None:
+        for imgID in imgIDs:
+            objpos[imgID] = objpos[imgID] / pxlperdeg[species]
+            objsize[imgID] = objsize[imgID] / pxlperdeg[species]
+
+    return objID, objpos, objsize, bgID, objdeg, objnum
+
 def get_eyeevent_info(eye_events, stiminfo, task_events, param, minlat=0, objdeg=None, objnum=None, pairing=None):
     objID, objpos, objsize, bgID, objdeg_stim, objnum_stim = stiminfo
 
@@ -276,18 +295,19 @@ def get_eyeevent_info(eye_events, stiminfo, task_events, param, minlat=0, objdeg
 
     return sacinfo, fixinfo
 
-def get_sactype(params, threshold):
-    objID_on, objID_off, obj_dist_on, obj_dist_off = params
-    if obj_dist_on > threshold and obj_dist_off > threshold:
-        return 4
-    elif obj_dist_on > threshold:
-        return 3
-    elif obj_dist_off > threshold:
-        return 2
-    elif objID_on != objID_off:
-        return 1
-    else:
-        return 0
+def get_sactype(sacinfo, threshold):
+    def _sactype(ID_on, ID_off, dist_on, dist_off):
+        if dist_on > threshold and dist_off > threshold:
+            return 4
+        elif dist_on > threshold:
+            return 3
+        elif dist_off > threshold:
+            return 2
+        elif ID_on != ID_off:
+            return 1
+        else:
+            return 0
+    return np.array([_sactype(*x) for x in zip(sacinfo['objID_on'], sacinfo['objID_off'], sacinfo['obj_dist_on'], sacinfo['obj_dist_off'])])
 
 
 if __name__ == "__main__":
