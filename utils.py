@@ -276,6 +276,19 @@ def get_eyeevent_info(eye_events, stiminfo, task_events, param, minlat=0, objdeg
 
     return sacinfo, fixinfo
 
+def get_sactype(params, threshold):
+    objID_on, objID_off, obj_dist_on, obj_dist_off = params
+    if obj_dist_on > threshold and obj_dist_off > threshold:
+        return 4
+    elif obj_dist_on > threshold:
+        return 3
+    elif obj_dist_off > threshold:
+        return 2
+    elif objID_on != objID_off:
+        return 1
+    else:
+        return 0
+
 
 if __name__ == "__main__":
     stimdir = "C:/Users/ito/datasets/osaka/stimuli"
