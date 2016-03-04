@@ -298,15 +298,15 @@ def get_eyeevent_info(eye_events, stiminfo, task_events, param, minlat=0, objdeg
 def get_sactype(sacinfo, threshold):
     def _sactype(ID_on, ID_off, dist_on, dist_off):
         if dist_on > threshold and dist_off > threshold:
-            return 4
+            return 4  # background-to-background saccade
         elif dist_on > threshold:
-            return 3
+            return 3  # background-to-object saccade
         elif dist_off > threshold:
-            return 2
+            return 2  # object-to-background saccade
         elif ID_on != ID_off:
-            return 1
+            return 1  # trans-object saccade
         else:
-            return 0
+            return 0  # intra-object saccade
     return np.array([_sactype(*x) for x in zip(sacinfo['objID_on'], sacinfo['objID_off'], sacinfo['obj_dist_on'], sacinfo['obj_dist_off'])])
 
 
