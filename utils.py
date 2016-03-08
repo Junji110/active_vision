@@ -197,8 +197,8 @@ def get_stiminfo(species, stimsetdir, imgIDs, tasktype, stim_size=None, pxlperde
 def get_eyeevent_info(eye_events, stiminfo, task_events, param, minlat=0, objdeg=None, objnum=None, pairing=None):
     objID, objpos, objsize, bgID, objdeg_stim, objnum_stim = stiminfo
 
-    fixinfo = {'trialID': [], 'imgID': [], 'bgID': [], 'on': [], 'off': [], 'dur': [], 'x': [], 'y': [], 'objID': [], 'obj_dist': [], 'obj_pos_x': [], 'obj_pos_y': []}
-    sacinfo = {'trialID': [], 'imgID': [], 'bgID': [], 'on': [], 'off': [], 'dur': [], 'x_on': [], 'y_on': [], 'x_off': [], 'y_off': [], 'amp': [], 'velo': [], 'accl': [], 'objID_on': [], 'objID_off': [], 'obj_dist_on': [], 'obj_dist_off': [], 'obj_pos_x_on': [], 'obj_pos_y_on': [], 'obj_pos_x_off': [], 'obj_pos_y_off': []}
+    fixinfo = {'trialID': [], 'imgID': [], 'bgID': [], 'on': [], 'off': [], 'dur': [], 'x': [], 'y': [], 'objID': [], 'obj_dist': [], 'obj_pos_x': [], 'obj_pos_y': [], 'order': []}
+    sacinfo = {'trialID': [], 'imgID': [], 'bgID': [], 'on': [], 'off': [], 'dur': [], 'x_on': [], 'y_on': [], 'x_off': [], 'y_off': [], 'amp': [], 'velo': [], 'accl': [], 'objID_on': [], 'objID_off': [], 'obj_dist_on': [], 'obj_dist_off': [], 'obj_pos_x_on': [], 'obj_pos_y_on': [], 'obj_pos_x_off': [], 'obj_pos_y_off': [], 'order': []}
 
     mask_fix = eye_events['eventID'] == 200
     mask_sac = eye_events['eventID'] == 100
@@ -232,6 +232,7 @@ def get_eyeevent_info(eye_events, stiminfo, task_events, param, minlat=0, objdeg
         fixinfo['trialID'].extend([trialID] * len(fix_trial))
         fixinfo['imgID'].extend([imgID] * len(fix_trial))
         fixinfo['bgID'].extend([bgID[imgID]] * len(fix_trial))
+        fixinfo['order'].extend(range(len(fix_trial)))
         fixinfo['on'].extend(fix_trial['on'] - clkcnt_img_on)
         fixinfo['off'].extend(fix_trial['off'] - clkcnt_img_on)
         fixinfo['dur'].extend(fix_trial['off'] - fix_trial['on'])
@@ -259,12 +260,14 @@ def get_eyeevent_info(eye_events, stiminfo, task_events, param, minlat=0, objdeg
                 mask_sac_paired[idx_fix + 1] = True
             else:
                 raise ValueError("pairing must be either 'sacfix' or 'fixsac'")
-            sac_trial = eye_events[mask_sac_paired & mask_fv]
+            # sac_trial = eye_events[mask_sac_paired & mask_fv]
+            sac_trial = eye_events[mask_sac_paired]
 
         # store saccade parameters in the buffer
         sacinfo['trialID'].extend([trialID] * len(sac_trial))
         sacinfo['imgID'].extend([imgID] * len(sac_trial))
         sacinfo['bgID'].extend([bgID[imgID]] * len(sac_trial))
+        sacinfo['order'].extend(range(len(sac_trial)))
         sacinfo['on'].extend(sac_trial['on'] - clkcnt_img_on)
         sacinfo['off'].extend(sac_trial['off'] - clkcnt_img_on)
         sacinfo['dur'].extend(sac_trial['off'] - sac_trial['on'])
