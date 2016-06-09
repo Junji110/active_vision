@@ -198,7 +198,7 @@ def get_eyeevent_info(eye_events, stiminfo, task_events, param, minlat=0, objdeg
     objID, objpos, objsize, bgID, objdeg_stim, objnum_stim = stiminfo
 
     fixinfo = {'trialID': [], 'imgID': [], 'bgID': [], 'on': [], 'off': [], 'dur': [], 'x': [], 'y': [], 'objID': [], 'obj_dist': [], 'obj_pos_x': [], 'obj_pos_y': [], 'order': []}
-    sacinfo = {'trialID': [], 'imgID': [], 'bgID': [], 'on': [], 'off': [], 'dur': [], 'x_on': [], 'y_on': [], 'x_off': [], 'y_off': [], 'amp': [], 'velo': [], 'accl': [], 'objID_on': [], 'objID_off': [], 'obj_dist_on': [], 'obj_dist_off': [], 'obj_pos_x_on': [], 'obj_pos_y_on': [], 'obj_pos_x_off': [], 'obj_pos_y_off': [], 'order': []}
+    sacinfo = {'trialID': [], 'imgID': [], 'bgID': [], 'on': [], 'off': [], 'dur': [], 'x_on': [], 'y_on': [], 'x_off': [], 'y_off': [], 'amp': [], 'angle': [], 'velo': [], 'accl': [], 'objID_on': [], 'objID_off': [], 'obj_dist_on': [], 'obj_dist_off': [], 'obj_pos_x_on': [], 'obj_pos_y_on': [], 'obj_pos_x_off': [], 'obj_pos_y_off': [], 'order': []}
 
     mask_fix = eye_events['eventID'] == 200
     mask_sac = eye_events['eventID'] == 100
@@ -280,7 +280,10 @@ def get_eyeevent_info(eye_events, stiminfo, task_events, param, minlat=0, objdeg
         sacinfo['y_on'].extend(sacpos_on[:, 1])
         sacinfo['x_off'].extend(sacpos_off[:, 0])
         sacinfo['y_off'].extend(sacpos_off[:, 1])
-        sacinfo['amp'].extend(np.hypot(sacpos_off[:, 0]-sacpos_on[:, 0], sacpos_off[:, 1]-sacpos_on[:, 1]))
+        x_diff = sacpos_off[:, 0]-sacpos_on[:, 0]
+        y_diff = sacpos_off[:, 1]-sacpos_on[:, 1]
+        sacinfo['amp'].extend(np.hypot(x_diff, y_diff))
+        sacinfo['angle'].extend(np.arctan2(y_diff, x_diff))
 
         obj_dist_on_all = np.hypot(*np.rollaxis(sacpos_on[:, None, :] - objpos[imgID][None, :, :], -1))
         sacinfo['obj_dist_on'].extend(obj_dist_on_all.min(axis=1))
