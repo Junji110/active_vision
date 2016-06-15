@@ -136,7 +136,7 @@ def load_imgmat_monkey(stimsetdir, imgIDs, tasktype="Free"):
             objdeg[imgID] = 2.0
             objnum[imgID] = len(objID[imgID])
         else:
-            print ".mat file for {}.png not found".format(imgID)
+            print "{}: .mat file for {}.png not found".format(stimsetdir, imgID)
     return objID, objpos, objsize, bgID, objdeg, objnum
 
 def load_imgmat_human(stimsetdir, imgIDs, tasktype="Free"):
@@ -149,7 +149,7 @@ def load_imgmat_human(stimsetdir, imgIDs, tasktype="Free"):
     for imgID in imgIDs:
         fn_imgmat = "{dir}/{id}.mat".format(dir=stimsetdir, id=imgID)
         if not os.path.exists(fn_imgmat):
-            print ".mat file for {0}.png not found".format(imgID)
+            print "{}: .mat file for {0}.png not found".format(stimsetdir, imgID)
 
         imginfo = spio.loadmat(fn_imgmat, squeeze_me=True, struct_as_record=False)
         if tasktype == "Free":
