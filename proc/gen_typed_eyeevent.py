@@ -139,6 +139,8 @@ def load_imgmat_human(stimsetdir, imgIDs):
     return objID, objpos, objsize, bgID
 
 def get_stiminfo(species, stimsetdir, imgIDs, stim_size=None, pxlperdeg=None):
+    if not os.path.exists(stimsetdir):
+        raise ValueError("Stimulus set directory {} not found.".format(stimsetdir))
     if species == 'Human':
         load_imgmat = load_imgmat_human
     else:
