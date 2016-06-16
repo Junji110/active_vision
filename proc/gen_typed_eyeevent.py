@@ -204,7 +204,7 @@ def get_fixinfo(eye_events, stiminfo, task_events, param):
     objID, objpos, objsize, bgID = stiminfo
     mask_fix = eye_events['eventID'] == 200
 
-    fixinfo = {'trialID': [], 'imgID': [], 'bgID': [], 'objID': [],
+    fixinfo = {'trialID': [], 'imgID': [], 'bgID': [], 'objID': [], 'objpos_x': [], 'objpos_y': [],
                'obj_dist': [], 'type': [], 'on': [], 'off': [], 'x_on': [],
                'y_on': [], 'x_off': [], 'y_off': [], 'param1': [], 'param2': []}
 
@@ -232,12 +232,15 @@ def get_fixinfo(eye_events, stiminfo, task_events, param):
         fix_trial = eye_events[mask_fix & mask_fv]
         fixpos = np.array((fix_trial['param1'], fix_trial['param2'])).swapaxes(0, 1)
         obj_dist_all = np.hypot(*np.rollaxis(fixpos[:, None, :] - objpos[imgID][None, :, :], -1))
+        idx_fixobj = obj_dist_all.argmin(axis=1)
 
         # store parameters in the buffer
         fixinfo['trialID'].extend([trialID] * len(fix_trial))
         fixinfo['imgID'].extend([imgID] * len(fix_trial))
         fixinfo['bgID'].extend([bgID[imgID]] * len(fix_trial))
-        fixinfo['objID'].extend(objID[imgID][obj_dist_all.argmin(axis=1)])
+        fixinfo['objID'].extend(objID[imgID][idx_fixobj])
+        fixinfo['objpos_x'].extend(objpos[imgID][idx_fixobj, 0])
+        fixinfo['objpos_y'].extend(objpos[imgID][idx_fixobj, 1])
         fixinfo['obj_dist'].extend(obj_dist_all.min(axis=1))
         fixinfo['on'].extend(fix_trial['on'])
         fixinfo['off'].extend(fix_trial['off'])
@@ -257,6 +260,7 @@ def get_sacinfo(eye_events, stiminfo, task_events, param):
     mask_sac = eye_events['eventID'] == 100
 
     sacinfo = {'trialID': [], 'imgID': [], 'bgID': [], 'objID_on': [],
+               'objpos_x_on': [], 'objpos_y_on': [], 'objpos_x_off': [], 'objpos_y_off': [],
                'objID_off': [], 'obj_dist_on': [], 'obj_dist_off': [],
                'type': [], 'on': [], 'off': [], 'x_on': [], 'y_on': [],
                'x_off': [], 'y_off': [], 'param1': [], 'param2': []}
@@ -285,15 +289,21 @@ def get_sacinfo(eye_events, stiminfo, task_events, param):
         sac_trial = eye_events[mask_sac & mask_fv]
         sacpos_on = np.array((sac_trial['x_on'], sac_trial['y_on'])).swapaxes(0, 1)
         obj_dist_on_all = np.hypot(*np.rollaxis(sacpos_on[:, None, :] - objpos[imgID][None, :, :], -1))
+        idx_sacobj_on = obj_dist_on_all.argmin(axis=1)
         sacpos_off = np.array((sac_trial['x_off'], sac_trial['y_off'])).swapaxes(0, 1)
         obj_dist_off_all = np.hypot(*np.rollaxis(sacpos_off[:, None, :] - objpos[imgID][None, :, :], -1))
+        idx_sacobj_off = obj_dist_off_all.argmin(axis=1)
 
         # store parameters in the buffer
         sacinfo['trialID'].extend([trialID] * len(sac_trial))
         sacinfo['imgID'].extend([imgID] * len(sac_trial))
         sacinfo['bgID'].extend([bgID[imgID]] * len(sac_trial))
-        sacinfo['objID_on'].extend(objID[imgID][obj_dist_on_all.argmin(axis=1)])
-        sacinfo['objID_off'].extend(objID[imgID][obj_dist_off_all.argmin(axis=1)])
+        sacinfo['objID_on'].extend(objID[imgID][idx_sacobj_on])
+        sacinfo['objID_off'].extend(objID[imgID][idx_sacobj_off])
+        sacinfo['objpos_x_on'].extend(objpos[imgID][idx_sacobj_on, 0])
+        sacinfo['objpos_y_on'].extend(objpos[imgID][idx_sacobj_on, 1])
+        sacinfo['objpos_x_off'].extend(objpos[imgID][idx_sacobj_off, 0])
+        sacinfo['objpos_y_off'].extend(objpos[imgID][idx_sacobj_off, 1])
         sacinfo['obj_dist_on'].extend(obj_dist_on_all.min(axis=1))
         sacinfo['obj_dist_off'].extend(obj_dist_off_all.min(axis=1))
         sacinfo['on'].extend(sac_trial['on'])
@@ -378,6 +388,8 @@ for species, sbj, sess, rec, blk, stimsetname, tasktype in datasets:
     # create an empty eye event array
     num_sac = len(sacinfo['type'])
     num_fix = len(fixinfo['type'])
+    print "{} saccades, {} fixations".format(num_sac, num_fix)
+    print "stimset: {}".format(stimsetdir)
     num_eyeevent = num_sac + num_fix
     dtype_eyeevent = [('eventID', int),
                       ('on', long), ('off', long),
@@ -387,6 +399,8 @@ for species, sbj, sess, rec, blk, stimsetname, tasktype in datasets:
                       ('type', int),
                       ('obj_dist_on', float), ('obj_dist_off', float),
                       ('objID_on', int), ('objID_off', int),
+                      ('objpos_x_on', float), ('objpos_y_on', float),
+                      ('objpos_x_off', float), ('objpos_y_off', float),
                       ]
     eye_events_typed = np.recarray((num_sac + num_fix,), dtype=dtype_eyeevent)
 
@@ -401,14 +415,10 @@ for species, sbj, sess, rec, blk, stimsetname, tasktype in datasets:
     for key in fixinfo:
         if key in eye_events_typed.dtype.names:
             eye_events_typed[key][num_sac:num_eyeevent] = fixinfo[key]
-        elif key == 'obj_dist':
-            obj_dist = fixinfo['obj_dist']
-            eye_events_typed['obj_dist_on'][num_sac:num_eyeevent] = obj_dist
-            eye_events_typed['obj_dist_off'][num_sac:num_eyeevent] = obj_dist
-        elif key == 'objID':
-            objID = fixinfo['objID']
-            eye_events_typed['objID_on'][num_sac:num_eyeevent] = objID
-            eye_events_typed['objID_off'][num_sac:num_eyeevent] = objID
+        elif key in ['obj_dist', 'objID', 'objpos_x', 'objpos_y']:
+            value = fixinfo[key]
+            eye_events_typed[key+'_on'][num_sac:num_eyeevent] = value
+            eye_events_typed[key+'_off'][num_sac:num_eyeevent] = value
 
     eye_events_typed.sort(order='on')
 
@@ -434,6 +444,6 @@ for species, sbj, sess, rec, blk, stimsetname, tasktype in datasets:
     # write to output file
     with open(fn_eyevex_out, "w") as f:
         f.write("\n".join(output_lines))
-    print "data saved in {0}".format(fn_eyevex_out)
+    print "data saved in {0}\n".format(fn_eyevex_out)
 
 
