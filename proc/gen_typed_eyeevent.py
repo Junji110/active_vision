@@ -68,7 +68,7 @@ def load_task(fn_task, blk):
         trialID = i_trial + 1
         trialdata = blockdata[blockdata['TRIAL_NUM'] == trialID]
         success.append(trialdata[-1]['SF_FLG'])
-        stimID.append(trialdata[-1]['t_tgt_data'])
+        stimID.append(trialdata[0]['t_tgt_data'])
 
     events = np.array(zip(evID, evtime, trial), dtype=[('evID', int), ('evtime', long), ('trial', int)])
     param = dict(num_trials=num_trials, success=success, stimID=stimID)
