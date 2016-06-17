@@ -70,6 +70,7 @@ def load_task(fn_task, blk=0):
 
     evID = blockdata['log_task_ctrl']
     evtime = blockdata['TIMING_CLOCK']
+    block = blockdata['g_block_num']
     trial = blockdata['TRIAL_NUM']
 
     num_trials = max(trial)
@@ -83,7 +84,7 @@ def load_task(fn_task, blk=0):
         stimID.append(trialdata[-1]['t_tgt_data'])
         task.append(trialdata[-1]['g_task_switch'])
 
-    events = np.array(zip(evID, evtime, trial), dtype=[('evID', int), ('evtime', long), ('trial', int)])
+    events = np.array(zip(evID, evtime, block, trial), dtype=[('evID', int), ('evtime', long), ('block', int), ('trial', int)])
     param = dict(num_trials=num_trials, success=success, stimID=stimID, task=task)
     return events, param
 
