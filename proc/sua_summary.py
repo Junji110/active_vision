@@ -1,6 +1,7 @@
 import numpy as np
 import scipy.stats as spstats
 import matplotlib.pyplot as plt
+from matplotlib import gridspec
 
 import utils
 
@@ -17,6 +18,7 @@ if __name__ == "__main__":
     sampling_rate = 20000.0
     bin_width = 50  # bin width in sec
     bin_step = 1  # bin step in sec
+    isi_max_ref = 0.003  # maximum ISI of spikes in refractory period
 
     # plot parameters
     colors_task = ["white", "blue", "yellow", "green"]
@@ -27,10 +29,10 @@ if __name__ == "__main__":
 
     # session information
     datasets = [
-        ["HIME", "20140908", 4, "pc1", "09081319V1hp2"],
+        # ["HIME", "20140908", 4, "pc1", "09081319V1hp2"],
         ["HIME", "20140908", 4, "pc2", "09081319IThp2"],
         ["SATSUKI", "20150811", 6, "pc1", "08111157rec6V1hp2"],
-        ["SATSUKI", "20150811", 6, "pc2", "08111157rec6IThp2"],
+        # ["SATSUKI", "20150811", 6, "pc2", "08111157rec6IThp2"],
         ]
 
     for dataset in datasets:
@@ -100,6 +102,7 @@ if __name__ == "__main__":
             isis = np.zeros(num_bin)
             isi_stds = np.zeros(num_bin)
             isi_pvals = np.zeros(num_bin)
+            isi_reffrac = np.zeros(num_bin)
             for i, t_ini in enumerate(bin_edges[:-1]):
                 mask_spikes_in_bin1 = (t_ini <= spike_times) & (spike_times < t_ini+bin_width)
                 mask_spikes_in_bin2 = (t_ini+bin_width <= spike_times) & (spike_times < t_ini+2*bin_width)
@@ -111,7 +114,8 @@ if __name__ == "__main__":
                 isi2 = np.diff(spike_times[mask_spikes_in_bin2])
                 _, isi_pvals[i] = spstats.ks_2samp(isi1, isi2)
                 isis[i] = isi1.mean()
-                isi_stds[i] = isi2.std()
+                isi_stds[i] = isi1.std()
+                isi_reffrac[i] = (isi1 < isi_max_ref).sum() / np.float(isi1.size)
 
                 # covariance as spike size
                 cov1 = spike_covs[:, mask_spikes_in_bin1]
@@ -123,15 +127,17 @@ if __name__ == "__main__":
             print "\t...done.\n"
 
             # make plots
-            plt.figure(figsize=(10,6))
-            plt.subplots_adjust(left=0.08, right=0.92)
+            plt.figure(figsize=(10,8))
+            plt.subplots_adjust(left=0.08, right=0.96)
             title = "{} unit {} (Ch {}, {} spikes)".format(fn_spikes, uid, unit_ch, num_spike)
             if selected:
                 title +="*"
             title += "\nbin width: {} s, bin step: {} s".format(bin_width, bin_step)
             plt.suptitle(title)
+            gs = gridspec.GridSpec(5, 2, width_ratios=[4, 1])
 
-            plt.subplot(411)
+            # plt.subplot(511)
+            plt.subplot(gs[0])
             plt.xlabel("Time (s)")
             plt.ylabel("Channel")
             X, Y = np.meshgrid(
@@ -145,7 +151,8 @@ if __name__ == "__main__":
             plt.grid(color="gray")
             # plt.colorbar().set_label("Waveform-template covariance")
 
-            plt.subplot(412)
+            # plt.subplot(512)
+            plt.subplot(gs[2])
             plt.xlabel("Time (s)")
             plt.ylabel("Spike size (cov)")
             plt.plot(spike_times, spike_covs[unit_ch], ",", color="black")
@@ -154,10 +161,25 @@ if __name__ == "__main__":
                     continue
                 plt.axvspan(ts_blk_on[i_blk], ts_blk_off[i_blk], color=colors_task[tasks_blk[i_blk]], alpha=0.1)
             plt.xlim(0, recdur)
-            plt.ylim(ymin=0)
+            plt.ylim(0, 200)
+            plt.grid(color="gray")
+            plt.subplot(gs[3])
+            plt.xlabel("Count")
+            plt.ylabel("Spike size (cov)")
+            plt.hist(spike_covs[unit_ch], bins=200, range=[0, 200], orientation="horizontal", linewidth=0, color="black")
             plt.grid(color="gray")
 
-            ax1 = plt.subplot(413)
+            # plt.subplot(513)
+            plt.subplot(gs[4])
+            plt.xlabel("Time (s)")
+            plt.ylabel("Fraction of refractory ISIs")
+            plt.plot(bin_times, isi_reffrac, color="black")
+            plt.xlim(0, recdur)
+            plt.ylim(0, 0.3)
+            plt.grid(color="gray")
+
+            # ax1 = plt.subplot(514)
+            ax1 = plt.subplot(gs[6])
             plt.xlabel("Time (s)")
             plt.ylabel("Spike size (cov)")
             plt.plot(bin_times, covs[unit_ch], color="black")
@@ -171,7 +193,8 @@ if __name__ == "__main__":
             plt.xlim(0, recdur)
             plt.ylim(-10, 10)
 
-            ax1 = plt.subplot(414)
+            # ax1 = plt.subplot(515)
+            ax1 = plt.subplot(gs[8])
             plt.xlabel("Time (s)")
             plt.ylabel("Firing rate (1/s)")
             plt.plot(bin_times, 1.0/isis, color="black")
@@ -191,6 +214,6 @@ if __name__ == "__main__":
                 fn_fig = "{}/{}_unit{}.png".format(savedir, fn_spikes, uid)
                 plt.savefig(fn_fig)
                 print "\tFigure saved as {}\n".format(fn_fig)
-                plt.clf()
+                plt.close("all")
             else:
                 plt.show()
