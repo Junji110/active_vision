@@ -122,8 +122,8 @@ def replace_short_segments(data, value, repl_len, repl_to):
 
 if __name__ == "__main__":
     # file information
-    # datasetdir = "z:"
-    datasetdir = "/users/junji/desktop/ito/datasets/osaka"
+    datasetdir = "z:"
+    # datasetdir = "/users/junji/desktop/ito/datasets/osaka"
     rawdir = "{}/RAWDATA".format(datasetdir)
     prepdir = "{}/PREPROCESSED".format(datasetdir)
     savedir = "."
@@ -135,11 +135,11 @@ if __name__ == "__main__":
 
     # session information
     datasets = [
-         ["HIME", "20140908", 4, "pc1", "09081309V1hp2"],
-        # ["HIME", "20140908", 4, "pc1", "09081319V1hp2"],
-        # ["HIME", "20140908", 4, "pc2", "09081319IThp2"],
-        # ["SATSUKI", "20150811", 6, "pc1", "08111157rec6V1hp2"],
-        # ["SATSUKI", "20150811", 6, "pc2", "08111157rec6IThp2"],
+         # ["HIME", "20140908", 4, "pc1", "09081309V1hp2"],
+        ["HIME", "20140908", 4, "pc1", "09081319V1hp2"],
+        ["HIME", "20140908", 4, "pc2", "09081319IThp2"],
+        ["SATSUKI", "20150811", 6, "pc1", "08111157rec6V1hp2"],
+        ["SATSUKI", "20150811", 6, "pc2", "08111157rec6IThp2"],
         ]
 
     for dataset in datasets:
@@ -205,6 +205,7 @@ if __name__ == "__main__":
             # re-assign new unit IDs if 2 clusters are found in any bin
             if np.any(nums_clst == 2):
                 unitIDs_tmp = np.ones_like(dataset["type"][mask_unit])
+                new_unitIDs = []
                 # assign a negative unit ID to the spikes in segments of 2's
                 seg_edges = segment_successive_occurrences(nums_clst, 2)
                 if seg_edges is not None:
@@ -212,6 +213,7 @@ if __name__ == "__main__":
                         idx_ini_spike = 0 if idx_ini == 0 else bin_edges[idx_ini]
                         idx_fin_spike = len(mask_unit) if idx_fin == len(bin_edges) else bin_edges[idx_fin-1] + bin_size
                         unitIDs_tmp[idx_ini_spike:idx_fin_spike] = -new_unitID
+                        new_unitIDs.append(-new_unitID)
                         new_unitID += 1
                 # assign a positive unit ID to the spikes in segments of 1's
                 seg_edges = segment_successive_occurrences(nums_clst, 1)
@@ -220,8 +222,10 @@ if __name__ == "__main__":
                         idx_ini_spike = 0 if idx_ini == 0 else bin_edges[idx_ini] + bin_size/2
                         idx_fin_spike = len(mask_unit) if idx_fin == len(bin_edges) else bin_edges[idx_fin-1] + bin_size/2
                         unitIDs_tmp[idx_ini_spike:idx_fin_spike] = new_unitID
+                        new_unitIDs.append(new_unitID)
                         new_unitID += 1
                 dataset["type"][mask_unit] = unitIDs_tmp
+                print "\tUnit {} is re-assigned to:".format(unitID), new_unitIDs
 
         with open("{}/{}.class_DemergedCluster".format(savedir, fn_spikes), "w") as f:
             f.write("OriginalFile={}\n".format(fn_class))
