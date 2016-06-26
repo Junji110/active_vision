@@ -75,7 +75,7 @@ def segment_successive_occurrences(data, value):
         idx_inc = np.hstack(([-1,], idx_inc))
     if idx_dec[-1] < idx_inc[-1]:
         idx_dec = np.hstack((idx_dec, [len(data) - 1,]))
-    return zip(idx_inc + 1, idx_dec + 1)
+    return np.array(zip(idx_inc + 1, idx_dec + 1))
 
 
 def replace_short_segments(data, value, repl_len, repl_to):
@@ -122,8 +122,8 @@ def replace_short_segments(data, value, repl_len, repl_to):
 
 if __name__ == "__main__":
     # file information
-    datasetdir = "z:"
-    # datasetdir = "/users/junji/desktop/ito/datasets/osaka"
+    # datasetdir = "z:"
+    datasetdir = "/users/junji/desktop/ito/datasets/osaka"
     rawdir = "{}/RAWDATA".format(datasetdir)
     prepdir = "{}/PREPROCESSED".format(datasetdir)
     savedir = "."
@@ -147,18 +147,19 @@ if __name__ == "__main__":
         print "\n{sbj}_{sess}_rec{rec}_{pc} ({fn_spikes})".format(**locals())
 
         # set filenames
-        fn_class = "{dir}/{sbj}/spikes/24ch_unselected/{fn}.class_Cluster".format(dir=prepdir, sbj=sbj, fn=fn_spikes)
+        fn_class_in = "{dir}/{sbj}/spikes/24ch_unselected/{fn}.class_Cluster".format(dir=prepdir, sbj=sbj, fn=fn_spikes)
         fn_task = utils.find_filenames(rawdir, sbj, sess, rec, 'task')[0]
+        fn_class_out = "{dir}/{fn}.class_DemergedCluster".format(dir=savedir, fn=fn_spikes)
 
         # load data
         print "\tLoading spike data file..."
-        dataset = np.genfromtxt(fn_class, skip_header=2, dtype=None, names=True)
+        dataset = np.genfromtxt(fn_class_in, skip_header=2, dtype=None, names=True)
         num_ch = len(dataset.dtype.names) - 3
         recdur = dataset["event_time"][-1]
         print "\t...done.\n"
 
         unitIDs = np.unique(dataset["type"])
-        new_unitID = unitIDs.max() + 1
+        dataset_subtype = np.zeros_like(dataset["type"])
         for i_unit, unitID in enumerate(unitIDs):
             mask_unit = dataset["type"] == unitID
             num_spike = mask_unit.sum()
@@ -202,34 +203,41 @@ if __name__ == "__main__":
             # then, flip isolated short segments of 2's to 1's
             nums_clst = replace_short_segments(nums_clst, 2, bin_size/bin_step, 1)
 
-            # re-assign new unit IDs if 2 clusters are found in any bin
+            # assign subtype numbers if 2 clusters are found in any bin
             if np.any(nums_clst == 2):
-                unitIDs_tmp = np.ones_like(dataset["type"][mask_unit])
-                new_unitIDs = []
-                # assign a negative unit ID to the spikes in segments of 2's
+                subtypes = np.zeros_like(dataset_subtype[mask_unit])
+                # assign a negative subtype numbers to the spikes in segments of 2's
+                # subtype -1 is given to the longest segment, -2 is given to the 2nd longest, and so on.
                 seg_edges = segment_successive_occurrences(nums_clst, 2)
                 if seg_edges is not None:
-                    for idx_ini, idx_fin in seg_edges:
+                    idx_sort_seg_edges = (seg_edges[:, 1] - seg_edges[:, 0]).argsort()
+                    subtype = -1
+                    for idx_ini, idx_fin in seg_edges[idx_sort_seg_edges[::-1]]:
                         idx_ini_spike = 0 if idx_ini == 0 else bin_edges[idx_ini]
                         idx_fin_spike = len(mask_unit) if idx_fin == len(bin_edges) else bin_edges[idx_fin-1] + bin_size
-                        unitIDs_tmp[idx_ini_spike:idx_fin_spike] = -new_unitID
-                        new_unitIDs.append(-new_unitID)
-                        new_unitID += 1
-                # assign a positive unit ID to the spikes in segments of 1's
+                        subtypes[idx_ini_spike:idx_fin_spike] = subtype
+                        subtype -= 1
+                # assign a positive subtype numbers to the spikes in segments of 1's
+                # subtype 1 is given to the longest segment, 2 is given to the 2nd longest, and so on.
                 seg_edges = segment_successive_occurrences(nums_clst, 1)
                 if seg_edges is not None:
-                    for idx_ini, idx_fin in seg_edges:
+                    idx_sort_seg_edges = (seg_edges[:, 1] - seg_edges[:, 0]).argsort()
+                    subtype = 1
+                    for idx_ini, idx_fin in seg_edges[idx_sort_seg_edges[::-1]]:
                         idx_ini_spike = 0 if idx_ini == 0 else bin_edges[idx_ini] + bin_size/2
                         idx_fin_spike = len(mask_unit) if idx_fin == len(bin_edges) else bin_edges[idx_fin-1] + bin_size/2
-                        unitIDs_tmp[idx_ini_spike:idx_fin_spike] = new_unitID
-                        new_unitIDs.append(new_unitID)
-                        new_unitID += 1
-                dataset["type"][mask_unit] = unitIDs_tmp
-                print "\tUnit {} is re-assigned to:".format(unitID), new_unitIDs
+                        subtypes[idx_ini_spike:idx_fin_spike] = subtype
+                        subtype += 1
+                dataset_subtype[mask_unit] = subtypes
 
-        with open("{}/{}.class_DemergedCluster".format(savedir, fn_spikes), "w") as f:
-            f.write("OriginalFile={}\n".format(fn_class))
+        # save results in a new class file
+        field_names = list(dataset.dtype.names)
+        field_names.insert(3, "subtype")
+        with open(fn_class_out, "w") as f:
+            f.write("OriginalFile={}\n".format(fn_class_in))
             f.write("BinSize[spikes]={bin_size}\tBinStep[spikes]={bin_step}\n".format(**locals()))
-            f.write("\t".join(dataset.dtype.names) + "\n")
-            for data in dataset:
-                f.write("\t".join([str(x) for x in data]) + "\n")
+            f.write("\t".join(field_names) + "\n")
+            for data, subtype in zip(dataset, dataset_subtype):
+                data_str = [str(x) for x in data]
+                data_str.insert(3, str(subtype))
+                f.write("\t".join(data_str) + "\n")
