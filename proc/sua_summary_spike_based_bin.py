@@ -67,23 +67,28 @@ if __name__ == "__main__":
     sampling_rate = 20000.0
     bin_size = 500  # bin width in number of spikes
     bin_step = 50  # bin step in number of spikes
-    isi_max_ref = 0.003  # maximum ISI of spikes in refractory period
     num_bin_hist = 40
 
     # plot parameters
     colors_task = ["white", "blue", "yellow", "green"]
 
     # execution parameters
-    # savefig = True
-    savefig = False
+    cluster_type = ""
+    # cluster_type = "Demerged"
+
+    estimate_nums_clst = True
+    # estimate_nums_clst = False
+
+    savefig = True
+    # savefig = False
 
     # session information
     datasets = [
          # ["HIME", "20140908", 4, "pc1", "09081309V1hp2"],
         ["HIME", "20140908", 4, "pc1", "09081319V1hp2"],
-        # ["HIME", "20140908", 4, "pc2", "09081319IThp2"],
-        # ["SATSUKI", "20150811", 6, "pc1", "08111157rec6V1hp2"],
-        # ["SATSUKI", "20150811", 6, "pc2", "08111157rec6IThp2"],
+        ["HIME", "20140908", 4, "pc2", "09081319IThp2"],
+        ["SATSUKI", "20150811", 6, "pc1", "08111157rec6V1hp2"],
+        ["SATSUKI", "20150811", 6, "pc2", "08111157rec6IThp2"],
         ]
 
     for dataset in datasets:
@@ -91,7 +96,7 @@ if __name__ == "__main__":
         print "\n{sbj}_{sess}_rec{rec}_{pc} ({fn_spikes})".format(**locals())
 
         # set filenames
-        fn_class = "{dir}/{sbj}/spikes/24ch_unselected/{fn}.class_Cluster".format(dir=prepdir, sbj=sbj, fn=fn_spikes)
+        fn_class = "{dir}/{sbj}/spikes/24ch_unselected/{fn}.class_{typ}Cluster".format(dir=prepdir, sbj=sbj, fn=fn_spikes, typ=cluster_type)
         fn_seltypes = "{dir}/{sbj}/spikes/24ch/{fn}.types_SelectedCluster".format(dir=prepdir, sbj=sbj, fn=fn_spikes)
         fn_task = utils.find_filenames(rawdir, sbj, sess, rec, 'task')[0]
 
@@ -126,7 +131,7 @@ if __name__ == "__main__":
 
             mask_unit = dataset["type"] == uid
             num_spike = mask_unit.sum()
-            if num_spike < 2*bin_size:
+            if num_spike <= 2*bin_size:
                 print "\tUnit {} has too few spikes ({} spikes in {} sec).\n".format(uid, num_spike, recdur)
                 continue
 
@@ -154,15 +159,14 @@ if __name__ == "__main__":
             isis = np.zeros(num_bin)
             isi_stds = np.zeros(num_bin)
             isi_pvals = np.zeros(num_bin)
-            isi_reffrac = np.zeros(num_bin)
             spike_size_hist = np.zeros((num_bin_hist, num_bin))
             nums_clst = np.zeros(num_bin)
             for i, idx_ini in enumerate(bin_edges):
                 idxs_spikes_in_bin1 = np.arange(idx_ini, idx_ini + bin_size)
                 idxs_spikes_in_bin2 = np.arange(idx_ini + bin_size, idx_ini + 2 * bin_size)
 
-                bin_times[i] = np.median(spike_times[idxs_spikes_in_bin1])
-                bin_times_pval[i] = (spike_times[idxs_spikes_in_bin1[-1]] + spike_times[idxs_spikes_in_bin2[0]]) / 2
+                bin_times[i] = (spike_times[idxs_spikes_in_bin1[0]] + spike_times[idxs_spikes_in_bin1[-1]]) / 2
+                bin_times_pval[i] = (spike_times[idxs_spikes_in_bin1[0]] + spike_times[idxs_spikes_in_bin2[-1]]) / 2
 
                 # inter-spike interval
                 isi1 = np.diff(spike_times[idxs_spikes_in_bin1])
@@ -170,7 +174,6 @@ if __name__ == "__main__":
                 _, isi_pvals[i] = spstats.ks_2samp(isi1, isi2)
                 isis[i] = isi1.mean()
                 isi_stds[i] = isi1.std()
-                isi_reffrac[i] = (isi1 < isi_max_ref).sum() / np.float(isi1.size)
 
                 # covariance as spike size
                 cov1 = spike_covs[:, idxs_spikes_in_bin1]
@@ -182,10 +185,10 @@ if __name__ == "__main__":
                 # spike size histogram
                 hist, bin_edges_hist = np.histogram(cov1[unit_ch], range=[0, 200], bins=num_bin_hist)
                 spike_size_hist[:, i] = hist
-                gaps = gap(cov1[unit_ch][:, np.newaxis], nrefs=1, ks=[1, 2])
-                nums_clst[i] = gaps.argmax() + 1
-
-                # print "{} in {}".format(i, len(bin_edges))
+                if estimate_nums_clst:
+                    gaps = gap(cov1[unit_ch][:, np.newaxis], nrefs=1, ks=[1, 2])
+                    nums_clst[i] = gaps.argmax() + 1
+                    print "\t{} in {}".format(i, len(bin_edges))
 
             print "\t...done.\n"
 
@@ -238,14 +241,16 @@ if __name__ == "__main__":
                 bin_edges_hist
             )
             plt.pcolormesh(X, Y, spike_size_hist, cmap="rainbow")
+            plt.xlim(0, recdur)
             plt.ylim(0, 200)
             plt.grid(color="gray")
-            # plt.colorbar().set_label("Waveform-template covariance")
-            ax2 = ax1.twinx()
-            plt.ylabel("# of clusters")
-            plt.plot(bin_times, nums_clst, color="magenta")
-            plt.xlim(0, recdur)
-            plt.ylim(0, 3)
+            # plt.colorbar().set_label("Count")
+            if estimate_nums_clst:
+                ax2 = ax1.twinx()
+                plt.ylabel("# of clusters")
+                plt.plot(bin_times, nums_clst, color="magenta")
+                plt.xlim(0, recdur)
+                plt.ylim(0, 3)
 
             ax1 = plt.subplot(gs[6])
             plt.xlabel("Time (s)")
@@ -265,9 +270,6 @@ if __name__ == "__main__":
             plt.xlabel("Time (s)")
             plt.ylabel("Firing rate (1/s)")
             plt.plot(bin_times, 1.0/isis, color="black")
-            # plt.ylabel("Inter-spike interval")
-            # plt.plot(bin_times, isis, color="black")
-            # plt.fill_between(bin_times, isis-2*isi_stds, isis+2*isi_stds, color="black", linewidth=0, alpha=0.2)
             plt.ylim(ymin=0)
             plt.grid(color="gray")
             ax2 = ax1.twinx()
