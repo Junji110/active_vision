@@ -195,13 +195,14 @@ def get_stiminfo(species, stimsetdir, imgIDs, tasktype, stim_size=None, pxlperde
 
     return objID, objpos, objsize, bgID, objdeg, objnum
 
-def get_eyeevent_info(eye_events, stiminfo, task_events, param, minlat=0, objdeg=None, objnum=None, pairing=None):
+def get_eyeevent_info(eye_events, stiminfo, task_events, param, minlat=0, objdeg=None, objnum=None, pairing=None, reject_eccentric_trials=False, fold=(1, 1)):
     objID, objpos, objsize, bgID, objdeg_stim, objnum_stim = stiminfo
 
     fixinfo = {'trialID': [], 'imgID': [], 'bgID': [], 'on': [], 'off': [], 'dur': [], 'x': [], 'y': [], 'objID': [], 'obj_dist': [], 'obj_pos_x': [], 'obj_pos_y': [], 'order': []}
     sacinfo = {'trialID': [], 'imgID': [], 'bgID': [], 'on': [], 'off': [], 'dur': [], 'x_on': [], 'y_on': [], 'x_off': [], 'y_off': [], 'amp': [], 'angle': [], 'velo': [], 'accl': [], 'objID_on': [], 'objID_off': [], 'obj_dist_on': [], 'obj_dist_off': [], 'obj_pos_x_on': [], 'obj_pos_y_on': [], 'obj_pos_x_off': [], 'obj_pos_y_off': [], 'order': []}
 
     mask_fix = eye_events['eventID'] == 200
+    # mask_fix = mask_fix & ((eye_events['off'] - eye_events['on']) < np.int(1.0 * 20000))
     mask_sac = eye_events['eventID'] == 100
 
     for i_trial in range(param['num_trials']):
@@ -223,11 +224,28 @@ def get_eyeevent_info(eye_events, stiminfo, task_events, param, minlat=0, objdeg
         if (taskev_trial['evID'] != 311).all() or (taskev_trial['evID'] != 312).all():
             continue
 
+        # reject trials without center object
+        if reject_eccentric_trials:
+            if np.sqrt((objpos[imgID][0]**2).sum()) >= 1:
+                continue
+
+        # skip trials according to fold
+        if i_trial % fold[0] != fold[1] - 1:
+            continue
+
         # pick up fixations during the free viewing period
         clkcnt_img_on = taskev_trial['evtime'][taskev_trial['evID'] == 311][0]
         clkcnt_img_off = taskev_trial['evtime'][taskev_trial['evID'] == 312][0]
         mask_fv = (clkcnt_img_on + minlat <= eye_events['on']) & (eye_events['on'] < clkcnt_img_off)
         fix_trial = eye_events[mask_fix & mask_fv]
+
+        # skip trials with no fixations
+        if len(fix_trial) == 0:
+            continue
+
+        # skip trials with fixations longer than 1 sec (indication of drowsiness)
+        if (fix_trial['off'] - fix_trial['on']).max() > np.int(1.0 * 20000):
+            continue
 
         # store fixation parameters in the buffer
         fixinfo['trialID'].extend([trialID] * len(fix_trial))
