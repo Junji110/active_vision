@@ -334,6 +334,23 @@ def get_sactype(sacinfo, threshold):
             return 0  # intra-object saccade
     return np.array([_sactype(*x) for x in zip(sacinfo['objID_on'], sacinfo['objID_off'], sacinfo['obj_dist_on'], sacinfo['obj_dist_off'])])
 
+def extract_fixsac_pair(eye_events, mode="fixsac"):
+    idx_fix_all = np.where(eye_events['eventID'] == 200)[0]
+    idx_sac_all = np.where(eye_events['eventID'] == 100)[0]
+
+    if mode == "fixsac":
+        idx_sac = np.array([x for x in idx_sac_all if x - 1 in idx_fix_all])
+        idx_fix = idx_sac - 1
+    elif mode == "sacfix":
+        idx_sac = np.array([x for x in idx_sac_all if x + 1 in idx_fix_all])
+        idx_fix = idx_sac + 1
+    else:
+        raise ValueError('mode must be either "fixsac" or "sacfix".')
+
+    idx_all = np.hstack((idx_sac, idx_fix))
+    idx_all.sort()
+    return eye_events[idx_all]
+
 
 if __name__ == "__main__":
     stimdir = "C:/Users/ito/datasets/osaka/stimuli"
