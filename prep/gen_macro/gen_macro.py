@@ -15,29 +15,27 @@ parser.add_argument("--macronames", default=["clust017.macroSpkSortingPlexon24Cl
 parser.add_argument("--macrodir", default="MACRO")
 arg = parser.parse_args()
 
-
 # compute data length
-# filename = "{}/{}.b00".format(arg.datadir, arg.dataname)
-# with open(filename, 'rb') as f:
-#     f.seek(0, 2)
-#     length = f.tell() / 4
-length = 10
+filename = "{0}/{1}/{1}.b00".format(arg.datadir, arg.dataname)
+with open(filename, 'rb') as f:
+    f.seek(0, 2)
+    length = f.tell() / 4
+# length = 10
 width = length
 
 # compute STD of the given data
-# stds = []
-# for i_ch in range(num_ch):
-#     filename = "{}/{}.b{:02d}".format(arg.datadir, arg.dataname, i_ch)
-#     data = np.fromfile(filename, dtype='>f4')
-#     stds.append(data.std())
-# std = np.mean(stds)
-std = 1.0
+stds = []
+for i_ch in range(num_ch):
+    filename = "{0}/{1}/{1}.b{2:02d}".format(arg.datadir, arg.dataname, i_ch)
+    data = np.fromfile(filename, dtype='>f4')
+    stds.append(data.std())
+std = np.mean(stds)
+# std = 1.0
 
-noise_level_clustering_3SD = 3.0 * std
-noise_level = 4.5 * std
+noise_level_clustering_3SD = 3.0 * std * 1000
+noise_level = 4.5 * std * 1000
 
-distdir = "{}/{}".format(arg.macrodir, arg.dataname)
-os.mkdir(distdir)
+distdir = "{}".format(arg.macrodir)
 for macroname in arg.macronames:
     infile = "{}/{}.template".format(arg.macrodir, macroname)
     outfile = "{}/{}".format(distdir, macroname)
