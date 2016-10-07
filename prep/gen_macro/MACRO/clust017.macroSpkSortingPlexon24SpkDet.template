@@ -1,0 +1,33 @@
+:Base_Filename	=$1
+:NoiseLevel[uV]	={noise_level}
+:___num_ChannelsInEachClusteringSet[]	=5
+:___num_ClusteringSets[]	=24
+:escape
+:___num_ChannelsInEachClusteringSet[]	!
+:Limit_SpkTimingDiffBetweenChs[s]	=.0002
+:NoiseLevelClustering3SD[uV]	={noise_level_clustering_3SD}
+:FluctuationRatioOfSpkAmp	=.1
+:Select_Experiment_and_Try_Once	!
+:2.1:DetectSpikes(NormalCorrel;4ms;Th_Correlation>0.7):->.table.tbl.bst	!
+:Select_Experiment_and_Try_Once	!
+:2.1:DetectSpikes(NormalCorrel;4ms;Th_Correlation>0.7):->.table.tbl.bst	!
+:Select_Experiment_and_Try_Once	!
+:3.1:SmoothingTemplate:<-.table->.template,.weight	!
+:Select_Experiment_and_Try_Once	!
+:2.1:DetectSpikes(NormalCorrel;4ms;Th_Correlation>0.7):->.table.tbl.bst	!
+:Select_Experiment_and_Try_Once	!
+:3.1:SmoothingTemplate:<-.table->.template,.weight	!
+:Select_Experiment_and_Try_Once	!
+:3.2:NormalizeTemplateByDiffTPP=300us:<-.template->.template,.weight	!
+:Select_Experiment_and_Try_Once	!
+:RecommendedTh_SmoothedMaxCorrelation:<-.template,.weight	!
+:Select_Experiment_and_Try_Once	!
+:5.1.5:DetSpks(AdvCorrelSubtractTimingTimeRatio)AvoidLongDurationLarge&SmallTimeRatioSpks:->.table.timing.timeratio.tbl.bst.period	!
+:Select_Experiment_and_Try_Once	!
+:6.1.3:DetSpks(RecalcAdvCorrelSubtractTimingTimeRatio):<-.period<->.table.timing.timeratio->.tbl.bst	!
+:Select_Experiment_and_Try_Once	!
+:MergeTables:<->.period.table.timing.timeratio.tbl.bst	!
+:Select_Experiment_and_Try_Once	!
+:8.1:DetectBurstSpikes&RemoveFollowingSpikes:<-.table.timeratio->.tbl.timeratio_tbl.bst.timeratio_bst.bstchklst.bursts	!
+:escape
+:Ok	!
