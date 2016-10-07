@@ -4,7 +4,12 @@ from argparse import ArgumentParser
 import numpy as np
 
 
-num_ch = 24
+labels_ch = [
+    '00', '01', '02', '03', '04', '05', '06', '07', '08', '09',
+    '0a', '0b', '0c', '0d', '0e', '0f', '0g', '0h', '0i', '0j',
+    '0k', '0l', '0m', '0n'
+    ]
+
 
 # parse command line options
 parser = ArgumentParser()
@@ -25,8 +30,8 @@ width = length
 
 # compute STD of the given data
 stds = []
-for i_ch in range(num_ch):
-    filename = "{0}/{1}/{1}.b{2:02d}".format(arg.datadir, arg.dataname, i_ch)
+for label_ch in labels_ch:
+    filename = "{0}/{1}/{1}.b{2}".format(arg.datadir, arg.dataname, label_ch)
     data = np.fromfile(filename, dtype='>f4')
     stds.append(data.std())
 std = np.mean(stds)
@@ -50,7 +55,7 @@ infile = "{}/d_info.template".format(arg.headerdir)
 with open(infile, "r") as f_in:
     template_text = f_in.read()
     # print template_text.format(**locals())
-    for i_ch in range(num_ch):
-        outfile = "{0}/{1}.b{2:02d}".format(distdir, arg.dataname, i_ch)
+    for label_ch in labels_ch:
+        outfile = "{0}/{1}.b{2}".format(distdir, arg.dataname, label_ch)
         with open(outfile, "w") as f_out:
             f_out.write(template_text.format(**locals()))
