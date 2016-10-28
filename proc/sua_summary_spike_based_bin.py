@@ -57,8 +57,9 @@ def gap(data, refs=None, nrefs=10, ks=range(1, 11)):
 
 if __name__ == "__main__":
     # file information
-    datasetdir = "z:"
+    # datasetdir = "z:"
     # datasetdir = "/users/junji/desktop/ito/datasets/osaka"
+    datasetdir = "/home/ito/datasets/osaka"
     rawdir = "{}/RAWDATA".format(datasetdir)
     prepdir = "{}/PREPROCESSED".format(datasetdir)
     savedir = "."
@@ -84,20 +85,27 @@ if __name__ == "__main__":
 
     # session information
     datasets = [
-         # ["HIME", "20140908", 4, "pc1", "09081309V1hp2"],
-        ["HIME", "20140908", 4, "pc1", "09081319V1hp2"],
-        ["HIME", "20140908", 4, "pc2", "09081319IThp2"],
-        ["SATSUKI", "20150811", 6, "pc1", "08111157rec6V1hp2"],
-        ["SATSUKI", "20150811", 6, "pc2", "08111157rec6IThp2"],
+        # ["HIME", "20140908", 4, "pc1", "09081309V1hp2"],
+        # ["HIME", "20140908", 4, "pc1", "09081319V1hp2"],
+        # ["HIME", "20140908", 4, "pc2", "09081319IThp2"],
+        # ["SATSUKI", "20150811", 6, "pc1", "08111157rec6V1hp2"],
+        # ["SATSUKI", "20150811", 6, "pc2", "08111157rec6IThp2"],
+        ["SATSUKI", "20151027", 5, 2, "IT"],
+        ["SATSUKI", "20151027", 5, 2, "V1"],
+        ["SATSUKI", "20151110", 7, 2, "IT"],
+        ["SATSUKI", "20151110", 7, 2, "V1"],
         ]
 
     for dataset in datasets:
-        sbj, sess, rec, pc, fn_spikes = dataset
-        print "\n{sbj}_{sess}_rec{rec}_{pc} ({fn_spikes})".format(**locals())
+        sbj, sess, rec, blk, site = dataset
+        fn_spikes = "{}_rec{}_blk{}_{}_h".format(sess, rec, blk, site)
+        print "\n{sbj}:{fn_spikes}".format(**locals())
 
         # set filenames
-        fn_class = "{dir}/{sbj}/spikes/24ch_unselected/{fn}.class_{typ}Cluster".format(dir=prepdir, sbj=sbj, fn=fn_spikes, typ=cluster_type)
-        fn_seltypes = "{dir}/{sbj}/spikes/24ch/{fn}.types_SelectedCluster".format(dir=prepdir, sbj=sbj, fn=fn_spikes)
+        # fn_class = "{dir}/{sbj}/spikes/24ch_unselected/{fn}.class_{typ}Cluster".format(dir=prepdir, sbj=sbj, fn=fn_spikes, typ=cluster_type)
+        fn_class = "{dir}/tmp/new/{fn}.class_{typ}Cluster".format(dir=prepdir, sbj=sbj, fn=fn_spikes, typ=cluster_type)
+        # fn_seltypes = "{dir}/{sbj}/spikes/24ch/{fn}.types_SelectedCluster".format(dir=prepdir, sbj=sbj, fn=fn_spikes)
+        fn_seltypes = "{dir}/tmp/new/{fn}.types_SelectedCluster".format(dir=prepdir, sbj=sbj, fn=fn_spikes)
         fn_task = utils.find_filenames(rawdir, sbj, sess, rec, 'task')[0]
 
         # load task events
