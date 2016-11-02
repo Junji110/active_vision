@@ -131,8 +131,8 @@ if __name__ == "__main__":
 
     # analysis parameters
     sampling_rate = 20000.0
-    bin_size = 500  # bin size in number of spikes
-    bin_step = 50  # bin step in number of spikes
+    bin_size = 200  # bin size in number of spikes
+    bin_step = 20  # bin step in number of spikes
 
     # session information
     datasets = [
@@ -169,9 +169,6 @@ if __name__ == "__main__":
         for i_unit, unitID in enumerate(unitIDs):
             mask_unit = dataset["type"] == unitID
             num_spike = mask_unit.sum()
-            if num_spike < bin_size:
-                print "\tUnit {} has too few spikes ({} spikes in {} sec).\n".format(unitID, num_spike, recdur)
-                continue
 
             print "\tProcessing unit {} ({} spikes)...".format(unitID, num_spike)
 
@@ -186,36 +183,33 @@ if __name__ == "__main__":
             # define unit channel as the one with the maximum mean covariance
             unit_ch = spike_covs.mean(1).argmax()
 
-            # time resolved estimation of cluster number
-            bin_edges = np.arange(0, num_spike - bin_size, bin_step)
-            num_bin = bin_edges.size
-            bin_times = np.empty(num_bin)
-            nums_clst = np.zeros(num_bin)
-            for i, idx_ini in enumerate(bin_edges):
-                idxs_spikes_in_bin = np.arange(idx_ini, idx_ini + bin_size)
+            # assign subtypes to spikes
+            subtypes = np.empty_like(dataset_subtype[mask_unit])
+            if num_spike >= bin_size:
+                # time-resolved estimation of cluster number
+                bin_edges = np.arange(0, num_spike - bin_size, bin_step)
+                num_bin = bin_edges.size
+                nums_clst = np.zeros(num_bin)
+                for i, idx_ini in enumerate(bin_edges):
+                    idxs_spikes_in_bin = np.arange(idx_ini, idx_ini + bin_size)
+                    cov = spike_covs[:, idxs_spikes_in_bin]
+                    gaps = gap(cov[unit_ch][:, np.newaxis], nrefs=1, ks=[1, 2])
+                    nums_clst[i] = gaps.argmax() + 1
 
-                bin_times[i] = (spike_times[idxs_spikes_in_bin[0]] + spike_times[idxs_spikes_in_bin[-1]]) / 2
+                # smooth nums_clst so that a sudden shift of single unit's spike size within a single bin is not detected as
+                # multiple units
+                # first, flip short segments of 1's to 2's (= concatenate neighboring segments of 2's as much as possible)
+                nums_clst = replace_short_segments(nums_clst, 1, bin_size/bin_step, 2)
+                # then, flip isolated short segments of 2's to 1's
+                nums_clst = replace_short_segments(nums_clst, 2, bin_size/bin_step, 1)
 
-                cov = spike_covs[:, idxs_spikes_in_bin]
-                gaps = gap(cov[unit_ch][:, np.newaxis], nrefs=1, ks=[1, 2])
-                nums_clst[i] = gaps.argmax() + 1
-
-            print "\t...done.\n"
-
-            # smooth nums_clst so that a sudden shift of single unit's spike size within a bin is not detected as
-            # multiple units
-            # first, flip short segments of 1's to 2's (= concatenate neighboring segments of 2's as much as possible)
-            nums_clst = replace_short_segments(nums_clst, 1, bin_size/bin_step, 2)
-            # then, flip isolated short segments of 2's to 1's
-            nums_clst = replace_short_segments(nums_clst, 2, bin_size/bin_step, 1)
-
-            # assign subtype numbers if 2 clusters are found in any bin
-            if np.any(nums_clst == 2):
-                subtypes = np.zeros_like(dataset_subtype[mask_unit])
-                # assign a negative subtype numbers to the spikes in segments of 2's
-                # subtype -1 is given to the longest segment, -2 is given to the 2nd longest, and so on.
-                seg_edges = segment_successive_occurrences(nums_clst, 2)
-                if seg_edges is not None:
+                if np.all(nums_clst == 2):
+                    # assign subtype -1 to all spikes of units with 2 clusters in all bins
+                    subtypes[:] = -1
+                elif np.any(nums_clst == 2):
+                    # assign negative subtype numbers to spikes in segments of 2's
+                    # subtype -1 is given to spikes in the longest segment, -2 to spikes in the 2nd longest, and so on.
+                    seg_edges = segment_successive_occurrences(nums_clst, 2)
                     idx_sort_seg_edges = (seg_edges[:, 1] - seg_edges[:, 0]).argsort()
                     subtype = -1
                     for idx_ini, idx_fin in seg_edges[idx_sort_seg_edges[::-1]]:
@@ -223,10 +217,9 @@ if __name__ == "__main__":
                         idx_fin_spike = len(mask_unit) if idx_fin == len(bin_edges) else bin_edges[idx_fin-1] + bin_size
                         subtypes[idx_ini_spike:idx_fin_spike] = subtype
                         subtype -= 1
-                # assign a positive subtype numbers to the spikes in segments of 1's
-                # subtype 1 is given to the longest segment, 2 is given to the 2nd longest, and so on.
-                seg_edges = segment_successive_occurrences(nums_clst, 1)
-                if seg_edges is not None:
+                    # assign a positive subtype numbers to the spikes in segments of 1's
+                    # subtype 1 is given to the longest segment, 2 is given to the 2nd longest, and so on.
+                    seg_edges = segment_successive_occurrences(nums_clst, 1)
                     idx_sort_seg_edges = (seg_edges[:, 1] - seg_edges[:, 0]).argsort()
                     subtype = 1
                     for idx_ini, idx_fin in seg_edges[idx_sort_seg_edges[::-1]]:
@@ -234,7 +227,19 @@ if __name__ == "__main__":
                         idx_fin_spike = len(mask_unit) if idx_fin == len(bin_edges) else bin_edges[idx_fin-1] + bin_size/2
                         subtypes[idx_ini_spike:idx_fin_spike] = subtype
                         subtype += 1
-                dataset_subtype[mask_unit] = subtypes
+                else:
+                    # assign subtype 0 to all spikes of units with 1 cluster in all bins
+                    subtypes[:] = 0
+            elif num_spike >= 2:
+                # when spikes are too few, time-resolved estimation of cluster number is not feasible
+                gaps = gap(spike_covs[unit_ch][:, np.newaxis], nrefs=1, ks=[1, 2])
+                subtypes[:] = 0 if gaps[0] > gaps[1] else -1
+            else:
+                # subtype 0 is assigned to units with only one spike
+                subtypes[:] = 0
+
+            dataset_subtype[mask_unit] = subtypes
+            print "\t...done.\n"
 
         # save results in a new class file
         field_names = list(dataset.dtype.names)
