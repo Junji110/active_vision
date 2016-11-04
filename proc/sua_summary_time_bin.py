@@ -35,9 +35,9 @@ if __name__ == "__main__":
         # ["SATSUKI", "20150811", 6, "pc1", "08111157rec6V1hp2"],
         # ["SATSUKI", "20150811", 6, "pc2", "08111157rec6IThp2"],
         ["SATSUKI", "20151027", 5, 2, "IT"],
-        ["SATSUKI", "20151027", 5, 2, "V1"],
-        ["SATSUKI", "20151110", 7, 2, "IT"],
-        ["SATSUKI", "20151110", 7, 2, "V1"],
+        # ["SATSUKI", "20151027", 5, 2, "V1"],
+        # ["SATSUKI", "20151110", 7, 2, "IT"],
+        # ["SATSUKI", "20151110", 7, 2, "V1"],
         ]
 
     for dataset in datasets:
