@@ -101,9 +101,6 @@ if __name__ == "__main__":
     colors_task = ["white", "blue", "yellow", "green"]
 
     # execution parameters
-    # cluster_type = ""
-    cluster_type = "Demerged"
-
     # estimate_nums_clst = True
     estimate_nums_clst = False
 
@@ -112,14 +109,18 @@ if __name__ == "__main__":
 
     # session information
     datasets = [
-        # ["SATSUKI", "20151027", 5, 2, "V1"],
-        # ["SATSUKI", "20151027", 5, 2, "IT"],
-        # ["SATSUKI", "20151110", 7, 2, "V1"],
-        ["SATSUKI", "20151110", 7, 2, "IT"],
+        # ["SATSUKI", "20151027", 5, 2, "V1", ""],
+        # ["SATSUKI", "20151027", 5, 2, "V1", "Demerged"],
+        # ["SATSUKI", "20151027", 5, 2, "IT", ""],
+        # ["SATSUKI", "20151027", 5, 2, "IT", "Demerged"],
+        # ["SATSUKI", "20151110", 7, 2, "V1", ""],
+        # ["SATSUKI", "20151110", 7, 2, "V1", "Demerged"],
+        # ["SATSUKI", "20151110", 7, 2, "IT", ""],
+        ["SATSUKI", "20151110", 7, 2, "IT", "Demerged"],
     ]
 
     for dataset in datasets:
-        sbj, sess, rec, blk, site = dataset
+        sbj, sess, rec, blk, site, cluster_type = dataset
         fn_spikes = "{}_rec{}_blk{}_{}_h".format(sess, rec, blk, site)
         print "\n{sbj}:{fn_spikes} ({cluster_type})".format(**locals())
 
@@ -171,27 +172,35 @@ if __name__ == "__main__":
         print "\tLoading spike data file..."
         dataset = np.genfromtxt(fn_class, skip_header=2, dtype=None, names=True)
         dataset["event_time"] += ts_blk_on[blk]
-        num_ch = len(dataset.dtype.names) - 4
+        if cluster_type == "Demerged":
+            num_ch = len(dataset.dtype.names) - 4
+        else:
+            num_ch = len(dataset.dtype.names) - 3
         print "\t...done.\n"
 
         mask_blk = (ts_blk_on[blk] < dataset["event_time"]) & (dataset["event_time"] < ts_blk_off[blk])
         for unit_type in np.unique(dataset["type"]):
             mask_type = (dataset["type"] == unit_type)
-            if cluster_type is "Demerged":
-                subtypes = np.unique(dataset["subtype"][mask_type])
-            else:
-                subtypes = [0,]
-            for subtype in subtypes:
+            unit_subtypes = np.unique(dataset["subtype"][mask_type]) if cluster_type == "Demerged" else [0, ]
+            for unit_subtype in unit_subtypes:
+                if cluster_type is "Demerged":
+                    mask_subtype = dataset["subtype"] == unit_subtype
+                    mask_unit = mask_type & mask_subtype
+                    unitID = "{}({})".format(unit_type, unit_subtype)
+                else:
+                    mask_unit = mask_type
+                    unitID = "{}".format(unit_type)
+                num_spike = mask_unit.sum()
                 # if subtype != 0:
                 #     continue
-                mask_subtype = (dataset["subtype"] == subtype)
-                mask_unit = mask_blk & mask_type & mask_subtype
-                num_spike = mask_unit.sum()
+                # mask_subtype = (dataset["subtype"] == subtype)
+                # mask_unit = mask_blk & mask_type & mask_subtype
+                # num_spike = mask_unit.sum()
                 if num_spike < num_trial:
-                    print "\tUnit {}({}) has too few spikes in block {} ({} spikes).\n".format(unit_type, subtype, blk, num_spike)
+                    print "\tUnit {} has too few spikes in block {} ({} spikes).\n".format(unitID, blk, num_spike)
                     continue
 
-                print "\tProcessing unit {}({}) ({} spikes)...".format(unit_type, subtype, num_spike)
+                print "\tProcessing unit {} ({} spikes)...".format(unitID, num_spike)
 
                 spike_times = dataset["event_time"][mask_unit]
                 trial_firing_rates = []
@@ -203,14 +212,14 @@ if __name__ == "__main__":
                 trial_firing_rates = np.array(trial_firing_rates)
                 trial_times = np.array(trial_times)
                 if np.all(trial_firing_rates == 0):
-                    print "\tUnit {}({}) is not active in any trial.\n".format(unit_type, subtype)
+                    print "\tUnit {} is not active in any trial.\n".format(unitID)
                     continue
 
                 idx_unit_trial_ini = np.where(trial_firing_rates > 0)[0][0]
                 idx_unit_trial_fin = np.where(trial_firing_rates > 0)[0][-1]
                 num_active_trial = idx_unit_trial_fin - idx_unit_trial_ini + 1
                 if num_active_trial <= 2*bin_size:
-                    print "\tUnit {}({}) is active in too few trials ({} trials).\n".format(unit_type, subtype, num_active_trial)
+                    print "\tUnit {} is active in too few trials ({} trials).\n".format(unitID, num_active_trial)
                     continue
 
                 # combine covariance values of multiple channels into one array
@@ -287,7 +296,7 @@ if __name__ == "__main__":
                 # make plots
                 plt.figure(figsize=(10, 8))
                 plt.subplots_adjust(left=0.08, right=0.96)
-                title = "{} unit {}({}) (Ch {}, {} spikes)".format(fn_spikes, unit_type, subtype, unit_ch, num_spike)
+                title = "{} unit {} (Ch {}, {} spikes)".format(fn_spikes, unitID, unit_ch, num_spike)
                 title += "\nbin size: {} trials, bin step: {} trials, FDR-q: {}, RPV threshold: {} ms".format(bin_size, bin_step, fdr_q, rpv_threshold)
                 plt.suptitle(title)
                 gs = gridspec.GridSpec(5, 2, width_ratios=[4, 1])
@@ -388,7 +397,7 @@ if __name__ == "__main__":
                 plt.grid(color="gray")
 
                 if savefig:
-                    fn_fig = "{}/{}_unit{}({}).png".format(savedir, fn_spikes, unit_type, subtype)
+                    fn_fig = "{}/{}_unit{}.png".format(savedir, fn_spikes, unitID)
                     plt.savefig(fn_fig)
                     print "\tFigure saved as {}\n".format(fn_fig)
                     plt.close("all")
