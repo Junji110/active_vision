@@ -81,7 +81,8 @@ def segment_successive_occurrences(data, value):
 if __name__ == "__main__":
     # file information
     # datasetdir = "z:"
-    datasetdir = "/users/junji/desktop/ito/datasets/osaka"
+    # datasetdir = "/users/junji/desktop/ito/datasets/osaka"
+    datasetdir = "/home/ito/datasets/osaka"
     rawdir = "{}/RAWDATA".format(datasetdir)
     prepdir = "{}/PREPROCESSED".format(datasetdir)
     savedir = "."
@@ -94,6 +95,7 @@ if __name__ == "__main__":
     timebin_size = 50.0  # time-based bin width in seconds
     timebin_step = 5.0  # time-based bin step in seconds
     fdr_q = 0.05
+    rpv_threshold = 1.0  # refractory period voilation threshold in ms
 
     # plot parameters
     colors_task = ["white", "blue", "yellow", "green"]
@@ -105,64 +107,74 @@ if __name__ == "__main__":
     # estimate_nums_clst = True
     estimate_nums_clst = False
 
-    savefig = True
-    # savefig = False
+    # savefig = True
+    savefig = False
 
     # session information
     datasets = [
-        # ["HIME", "20140908", 4, "pc1", "09081309V1hp2"],
-        ["HIME", "20140908", 4, 11, "pc1", "09081319V1hp2"],
-        ["HIME", "20140908", 4, 11, "pc2", "09081319IThp2"],
-        ["SATSUKI", "20150811", 6, 2, "pc1", "08111157rec6V1hp2"],
-        ["SATSUKI", "20150811", 6, 2, "pc2", "08111157rec6IThp2"],
-        ]
+        # ["SATSUKI", "20151027", 5, 2, "V1"],
+        # ["SATSUKI", "20151027", 5, 2, "IT"],
+        # ["SATSUKI", "20151110", 7, 2, "V1"],
+        ["SATSUKI", "20151110", 7, 2, "IT"],
+    ]
 
     for dataset in datasets:
-        sbj, sess, rec, blk, pc, fn_spikes = dataset
-        print "\n{sbj}_{sess}_rec{rec}_{pc} ({fn_spikes})".format(**locals())
+        sbj, sess, rec, blk, site = dataset
+        fn_spikes = "{}_rec{}_blk{}_{}_h".format(sess, rec, blk, site)
+        print "\n{sbj}:{fn_spikes} ({cluster_type})".format(**locals())
 
         # set filenames
-        fn_class = "{dir}/{sbj}/spikes/24ch_unselected/{fn}.class_{typ}Cluster".format(dir=prepdir, sbj=sbj, fn=fn_spikes, typ=cluster_type)
+        # fn_class = "{dir}/{sbj}/spikes/24ch_unselected/{fn}.class_{typ}Cluster".format(dir=prepdir, sbj=sbj, fn=fn_spikes, typ=cluster_type)
+        fn_class = "{dir}/tmp/new/{fn}.class_{typ}Cluster".format(dir=prepdir, sbj=sbj, fn=fn_spikes, typ=cluster_type)
         fn_task = utils.find_filenames(rawdir, sbj, sess, rec, 'task')[0]
 
         # load task events
         print "\tLoading task data file..."
-        task_events, task_param = utils.load_task(fn_task, blk)
-        task_blk = task_param['task'][0]
-        evID_img_on = task_blk*100 + 11
-        evID_img_off = task_blk*100 + 12
-        t_blk_on = task_events["evtime"][0] / sampling_rate
-        t_blk_off = task_events["evtime"][-2] / sampling_rate
-        ts_img_on = []
-        ts_img_off = []
-        for i_trial in range(task_param["num_trials"]):
-            # reject failure trials
-            if task_param['success'][i_trial] <= 0:
-                continue
+        task_events, task_param = utils.load_task(fn_task)
+        blks = np.unique(task_events['block'])
+        ts_blk_on = []
+        ts_blk_off = []
+        tasks_blk = []
+        for b in blks:
+            blk_events, blk_param = utils.load_task(fn_task, b)
+            task_blk = blk_param['task'][0]
+            tasks_blk.append(task_blk)
+            ts_blk_on.append(blk_events["evtime"][0] / sampling_rate)
+            ts_blk_off.append(blk_events["evtime"][-2] / sampling_rate)
+            if b == blk:
+                evID_img_on = task_blk*100 + 11
+                evID_img_off = task_blk*100 + 12
+                ts_img_on = []
+                ts_img_off = []
+                for i_trial in range(task_param["num_trials"]):
+                    # reject failure trials
+                    if task_param['success'][i_trial] <= 0:
+                        continue
 
-            trialID = i_trial + 1
-            trial_events = task_events[task_events['trial'] == trialID]
+                    trialID = i_trial + 1
+                    trial_events = blk_events[blk_events['trial'] == trialID]
 
-            # reject trials with missing image-onset or offset events
-            if (trial_events['evID'] != evID_img_on).all() or (trial_events['evID'] != evID_img_off).all():
-                continue
+                    # reject trials with missing image-onset or offset events
+                    if (trial_events['evID'] != evID_img_on).all() or (trial_events['evID'] != evID_img_off).all():
+                        continue
 
-            ts_img_on.append(trial_events['evtime'][trial_events['evID'] == evID_img_on][0] / sampling_rate)
-            ts_img_off.append(trial_events['evtime'][trial_events['evID'] == evID_img_off][0] / sampling_rate)
-        ts_img_on = np.array(ts_img_on)
-        ts_img_off = np.array(ts_img_off)
-        assert(len(ts_img_on) == len(ts_img_off))
-        num_trial = len(ts_img_on)
+                    ts_img_on.append(trial_events['evtime'][trial_events['evID'] == evID_img_on][0] / sampling_rate)
+                    ts_img_off.append(trial_events['evtime'][trial_events['evID'] == evID_img_off][0] / sampling_rate)
+                ts_img_on = np.array(ts_img_on)
+                ts_img_off = np.array(ts_img_off)
+                assert(len(ts_img_on) == len(ts_img_off))
+                num_trial = len(ts_img_on)
+        recdur = ts_blk_off[-1]
         print "\t...done.\n"
 
         # load data
         print "\tLoading spike data file..."
         dataset = np.genfromtxt(fn_class, skip_header=2, dtype=None, names=True)
+        dataset["event_time"] += ts_blk_on[blk]
         num_ch = len(dataset.dtype.names) - 4
-        recdur = dataset["event_time"][-1]
         print "\t...done.\n"
 
-        mask_blk = (t_blk_on < dataset["event_time"]) & (dataset["event_time"] < t_blk_off)
+        mask_blk = (ts_blk_on[blk] < dataset["event_time"]) & (dataset["event_time"] < ts_blk_off[blk])
         for unit_type in np.unique(dataset["type"]):
             mask_type = (dataset["type"] == unit_type)
             if cluster_type is "Demerged":
@@ -182,9 +194,20 @@ if __name__ == "__main__":
                 print "\tProcessing unit {}({}) ({} spikes)...".format(unit_type, subtype, num_spike)
 
                 spike_times = dataset["event_time"][mask_unit]
-                mask_unit_trial = [((t_ini <= spike_times) & (spike_times < t_fin)).sum() > 0 for t_ini, t_fin in zip(ts_img_on, ts_img_off)]
-                idx_unit_trial_ini = np.where(mask_unit_trial)[0][0]
-                idx_unit_trial_fin = np.where(mask_unit_trial)[0][-1]
+                trial_firing_rates = []
+                trial_times = []
+                for t_ini, t_fin in zip(ts_img_on, ts_img_off):
+                    mask_trial = (t_ini <= spike_times) & (spike_times < t_fin)
+                    trial_firing_rates.append(mask_trial.sum() / (t_fin-t_ini))
+                    trial_times.append((t_ini + t_fin) / 2)
+                trial_firing_rates = np.array(trial_firing_rates)
+                trial_times = np.array(trial_times)
+                if np.all(trial_firing_rates == 0):
+                    print "\tUnit {}({}) is not active in any trial.\n".format(unit_type, subtype)
+                    continue
+
+                idx_unit_trial_ini = np.where(trial_firing_rates > 0)[0][0]
+                idx_unit_trial_fin = np.where(trial_firing_rates > 0)[0][-1]
                 num_active_trial = idx_unit_trial_fin - idx_unit_trial_ini + 1
                 if num_active_trial <= 2*bin_size:
                     print "\tUnit {}({}) is active in too few trials ({} trials).\n".format(unit_type, subtype, num_active_trial)
@@ -199,16 +222,8 @@ if __name__ == "__main__":
                 # define unit channel as the one with the maximum mean covariance
                 unit_ch = spike_covs.mean(1).argmax()
 
-                trial_firing_rates = []
-                trial_times = []
-                for t_ini, t_fin in zip(ts_img_on, ts_img_off):
-                    mask_trial = (t_ini <= spike_times) & (spike_times < t_fin)
-                    trial_firing_rates.append(mask_trial.sum() / (t_fin-t_ini))
-                    trial_times.append((t_ini + t_fin) / 2)
-
                 # compute trial resolved measures
                 bin_edges = np.arange(idx_unit_trial_ini, idx_unit_trial_fin-2*bin_size+1, bin_step)
-                # bin_edges = np.arange(0, num_trial - 2 * bin_size, bin_step)
                 num_bin = bin_edges.size
                 bin_times_pval = np.empty(num_bin)
                 fr_pvals = np.zeros(num_bin)
@@ -218,22 +233,54 @@ if __name__ == "__main__":
                     _, fr_pvals[i] = spstats.ks_2samp(fr1, fr2)
                     bin_times_pval[i] = (trial_times[idx_ini+bin_size-1] + trial_times[idx_ini+bin_size]) / 2
 
-                # compute time resolved measures
-                timebin_edges = np.arange(0, spike_times[-1], timebin_step)
-                timebin_times = timebin_edges + timebin_size/2
-                firing_rates = np.zeros(timebin_times.size)
-                for i, t_ini in enumerate(timebin_edges[:-1]):
-                    firing_rates[i] = ((t_ini <= spike_times) & (spike_times < t_ini+timebin_size)).sum() / timebin_size
-
-                # FDR with Benjamini-Hochberg method
+                # define the p-value threshold for FDR with Benjamini-Hochberg method
                 pval_thresholds = np.linspace(fdr_q / len(fr_pvals), fdr_q, len(fr_pvals))
                 idxs_rejected_pval = np.where(np.sort(fr_pvals) < pval_thresholds)[0]
-                if len(idxs_rejected_pval) > 1:
-                    pval_threshold = pval_thresholds[idxs_rejected_pval.max()]
-                    rejected_segment_edges = segment_successive_occurrences(fr_pvals < pval_threshold, 1)
-                else:
-                    rejected_segment_edges = None
+                pval_threshold = 0 if len(idxs_rejected_pval) == 0 else pval_thresholds[idxs_rejected_pval.max()]
+                unstable_segment_edges = segment_successive_occurrences(fr_pvals < pval_threshold, True)
+                stable_segment_edges = segment_successive_occurrences(fr_pvals < pval_threshold, False)
 
+                # identify segments of stable (or unstable) rate and assign segment IDs
+                # segment ID 0: when no unstable segments are identified, ID 0 is assigned to the whole episode
+                # segment ID 1, 2, 3, ...: stable segments with the longest duration, the 2nd longest, and so on
+                # segment ID -1, -2, -3, ...: unstable segments with the longest duration, the 2nd longest, and so on
+                seg_edges = {}
+                segIDs = np.empty_like(fr_pvals)
+                if len(idxs_rejected_pval) == 0:
+                    segIDs[:] = 0
+                    seg_edges[0] = [0, len(fr_pvals)]
+                elif len(idxs_rejected_pval) == len(fr_pvals):
+                    segIDs[:] = -1
+                    seg_edges[-1] = [0, len(fr_pvals)]
+                else:
+                    segID = -1
+                    for i_seg in np.argsort([x[1]-x[0] for x in unstable_segment_edges])[::-1]:
+                        seg_edge = unstable_segment_edges[i_seg]
+                        seg_edges[segID] = seg_edge
+                        segIDs[seg_edge[0]:seg_edge[1]] = segID
+                        segID -= 1
+                    segID = 1
+                    for i_seg in np.argsort([x[1]-x[0] for x in stable_segment_edges])[::-1]:
+                        seg_edge = stable_segment_edges[i_seg]
+                        seg_edges[segID] = seg_edge
+                        segIDs[seg_edge[0]:seg_edge[1]] = segID
+                        segID += 1
+                seg_time_ranges = {}
+                for segID, seg_edge in seg_edges.items():
+                    t_ini = spike_times[0] if seg_edge[0] == 0 else bin_times_pval[seg_edge[0]]
+                    t_fin = spike_times[-1] if seg_edge[1] == len(fr_pvals) else bin_times_pval[seg_edge[1]-1]
+                    seg_time_ranges[segID] = [t_ini, t_fin]
+
+                # compute time resolved measures
+                timebin_edges = np.arange(spike_times[0], spike_times[-1]-timebin_size+timebin_step/2, timebin_step)
+                num_timebin = timebin_edges.size
+                timebin_times = timebin_edges + timebin_size/2
+                firing_rates = np.zeros(timebin_times.size)
+                cov_means = np.zeros((num_ch, num_timebin))
+                for i, t_ini in enumerate(timebin_edges):
+                    idxs_spikes_in_bin = (t_ini <= spike_times) & (spike_times < t_ini+timebin_size)
+                    firing_rates[i] = (idxs_spikes_in_bin).sum() / timebin_size
+                    cov_means[:, i] = spike_covs[:, idxs_spikes_in_bin].mean(1)
 
                 print "\t...done.\n"
 
@@ -241,34 +288,38 @@ if __name__ == "__main__":
                 plt.figure(figsize=(10, 8))
                 plt.subplots_adjust(left=0.08, right=0.96)
                 title = "{} unit {}({}) (Ch {}, {} spikes)".format(fn_spikes, unit_type, subtype, unit_ch, num_spike)
-                title += "\nbin size: {} trials, bin step: {} trials, FDR-q: {}".format(bin_size, bin_step, fdr_q)
+                title += "\nbin size: {} trials, bin step: {} trials, FDR-q: {}, RPV threshold: {} ms".format(bin_size, bin_step, fdr_q, rpv_threshold)
                 plt.suptitle(title)
                 gs = gridspec.GridSpec(5, 2, width_ratios=[4, 1])
 
-                # plt.subplot(gs[0])
-                # plt.xlabel("Time (s)")
-                # plt.ylabel("Channel")
-                # X, Y = np.meshgrid(
-                #     bin_times,
-                #     np.linspace(-0.5, num_ch-0.5, num_ch+1)
-                # )
-                # vmax = np.abs(cov_means).max()
-                # plt.pcolormesh(X, Y, cov_means, vmax=vmax, vmin=-vmax, cmap="bwr")
-                # plt.xlim(0, recdur)
-                # plt.ylim(23, 0)
-                # plt.grid(color="gray")
-                # # plt.colorbar().set_label("Waveform-template covariance")
+                plt.subplot(gs[0])
+                plt.xlabel("Time (s)")
+                plt.ylabel("Channel")
+                X, Y = np.meshgrid(
+                    timebin_times,
+                    np.linspace(-0.5, num_ch-0.5, num_ch+1)
+                )
+                vmax = np.abs(cov_means).max()
+                plt.pcolormesh(X, Y, cov_means, vmax=vmax, vmin=-vmax, cmap="bwr")
+                plt.xlim(0, recdur)
+                plt.ylim(23, 0)
+                plt.grid(color="gray")
+                # plt.colorbar().set_label("Waveform-template covariance")
 
                 plt.subplot(gs[2])
                 plt.xlabel("Time (s)")
                 plt.ylabel("Spike size (cov)")
                 plt.plot(spike_times, spike_covs[unit_ch], ",", color="black")
-                # for t_ini, t_fin in zip(ts_img_on, ts_img_off):
-                for i in range(idx_unit_trial_ini, idx_unit_trial_fin+1):
-                    t_ini = ts_img_on[i]
-                    t_fin = ts_img_off[i]
-                    plt.axvspan(t_ini, t_fin, color=colors_task[task_blk], alpha=0.1, linewidth=0)
-                plt.xlim(t_blk_on, t_blk_off)
+                for i_blk, b in enumerate(blks):
+                    if b == 0:
+                        continue
+                    plt.axvspan(ts_blk_on[i_blk], ts_blk_off[i_blk], color=colors_task[tasks_blk[i_blk]], alpha=0.1, linewidth=0)
+                for t_ini, t_fin in zip(ts_img_on, ts_img_off):
+                # for i in range(idx_unit_trial_ini, idx_unit_trial_fin+1):
+                #     t_ini = ts_img_on[i]
+                #     t_fin = ts_img_off[i]
+                    plt.axvspan(t_ini, t_fin, color=colors_task[tasks_blk[blk]], alpha=0.1, linewidth=0)
+                plt.xlim(0, recdur)
                 plt.ylim(0, 200)
                 plt.grid(color="gray")
                 plt.subplot(gs[3])
@@ -277,50 +328,63 @@ if __name__ == "__main__":
                 plt.hist(spike_covs[unit_ch], bins=200, range=[0, 200], orientation="horizontal", linewidth=0, color="black")
                 plt.grid(color="gray")
 
-                # ax1 = plt.subplot(gs[4])
-                # plt.xlabel("Time (s)")
-                # plt.ylabel("Spike size (cov)")
-                # X, Y = np.meshgrid(
-                #     bin_times,
-                #     bin_edges_hist
-                # )
-                # plt.pcolormesh(X, Y, spike_size_hist, cmap="rainbow")
-                # plt.xlim(0, recdur)
-                # plt.ylim(0, 200)
-                # plt.grid(color="gray")
-                # # plt.colorbar().set_label("Count")
-                # if estimate_nums_clst:
-                #     ax2 = ax1.twinx()
-                #     plt.ylabel("# of clusters")
-                #     plt.plot(bin_times, nums_clst, color="magenta")
-                #     plt.xlim(0, recdur)
-                #     plt.ylim(0, 3)
-
-                ax1 = plt.subplot(gs[6])
+                ax1 = plt.subplot(gs[4])
                 plt.xlabel("Time (s)")
                 plt.ylabel("Firing rate (1/s)")
                 plt.plot(trial_times[idx_unit_trial_ini:idx_unit_trial_fin+1], trial_firing_rates[idx_unit_trial_ini:idx_unit_trial_fin+1], color="black", marker="+")
-                plt.xlim(t_blk_on, t_blk_off)
+                plt.xlim(0, recdur)
                 plt.ylim(ymin=0)
                 plt.grid(color="gray")
                 ax2 = ax1.twinx()
                 plt.ylabel("Surprise")
                 plt.plot(bin_times_pval, np.log10((1.0 - fr_pvals) / fr_pvals), color="magenta")
                 plt.axhline(y=0, color="magenta", linestyle=":")
-                plt.xlim(t_blk_on, t_blk_off)
+                plt.xlim(0, recdur)
                 plt.ylim(-10, 10)
 
-                ax1 = plt.subplot(gs[8])
+                ax1 = plt.subplot(gs[6])
                 plt.xlabel("Time (s)")
                 plt.ylabel("Firing rate (1/s)")
                 plt.plot(timebin_times, firing_rates, color="black")
-                if rejected_segment_edges is not None:
-                    for idx_ini, idx_fin in rejected_segment_edges:
-                        t_ini = spike_times[0] if idx_ini == 0 else bin_times_pval[idx_ini]
-                        t_fin = spike_times[-1] if idx_ini == len(bin_times_pval)+1 else bin_times_pval[idx_fin-1]
-                        plt.axvspan(t_ini, t_fin, color="red", alpha=0.2, linewidth=0)
-                plt.xlim(t_blk_on, t_blk_off)
+                # for segID, seg_edge in seg_edges.items():
+                for segID, [t_ini, t_fin] in seg_time_ranges.items():
+                    seg_color = "blue" if segID >= 0 else "red"
+                    plt.axvspan(t_ini, t_fin, color=seg_color, alpha=0.1, linewidth=0)
+                plt.xlim(0, recdur)
                 plt.ylim(ymin=0)
+                plt.grid(color="gray")
+                # ax2 = ax1.twinx()
+                # plt.plot(bin_times_pval[segIDs >= 0], segIDs[segIDs >= 0], 'bo')
+                # plt.plot(bin_times_pval[segIDs < 0], segIDs[segIDs < 0], 'ro')
+                # plt.xlabel("Time (s)")
+                # plt.ylabel("Segment ID")
+                # plt.xlim(t_blk_on, t_blk_off)
+
+                plt.subplot(gs[8])
+                plt.xlabel("Time (s)")
+                plt.ylabel("ISI (ms)")
+                isis = np.diff(spike_times) * 1000
+                plt.plot(spike_times[:-1], isis, ",", color="black")
+                plt.axhline(rpv_threshold, color="red")
+                for i_blk, b in enumerate(blks):
+                    if b == 0:
+                        continue
+                    plt.axvspan(ts_blk_on[i_blk], ts_blk_off[i_blk], color=colors_task[tasks_blk[i_blk]], alpha=0.1, linewidth=0)
+                for t_ini, t_fin in zip(ts_img_on, ts_img_off):
+                # for i in range(idx_unit_trial_ini, idx_unit_trial_fin+1):
+                #     t_ini = ts_img_on[i]
+                #     t_fin = ts_img_off[i]
+                    plt.axvspan(t_ini, t_fin, color=colors_task[tasks_blk[blk]], alpha=0.1, linewidth=0)
+                plt.yscale('log')
+                plt.xlim(0, recdur)
+                plt.ylim(0.1, 1000)
+                plt.grid(color="gray")
+                plt.subplot(gs[9])
+                plt.xlabel("Count")
+                plt.ylabel("ISI (log10(ms))")
+                plt.hist(np.log10(isis), bins=200, range=[np.log10(0.1), np.log10(1000)], orientation="horizontal", linewidth=0, color="black")
+                plt.axhline(np.log10(rpv_threshold), color="red")
+                plt.ylim(np.log10(0.1), np.log10(1000))
                 plt.grid(color="gray")
 
                 if savefig:
