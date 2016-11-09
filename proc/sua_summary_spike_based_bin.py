@@ -67,6 +67,7 @@ if __name__ == "__main__":
     bin_size = 200  # bin width in number of spikes
     bin_step = 20  # bin step in number of spikes
     num_bin_hist = 40
+    rpv_threshold = 1.0  # refractory period voilation threshold in ms
 
     # plot parameters
     colors_task = ["white", "blue", "yellow", "green"]
@@ -99,8 +100,8 @@ if __name__ == "__main__":
         # ["SATSUKI", "20151027", 5, 2, "IT", "Demerged"],
         # ["SATSUKI", "20151110", 7, 2, "V1", ""],
         # ["SATSUKI", "20151110", 7, 2, "V1", "Demerged"],
-        # ["SATSUKI", "20151110", 7, 2, "IT", ""],
-        ["SATSUKI", "20151110", 7, 2, "IT", "Demerged"],
+        ["SATSUKI", "20151110", 7, 2, "IT", ""],
+        # ["SATSUKI", "20151110", 7, 2, "IT", "Demerged"],
     ]
 
 
@@ -115,7 +116,7 @@ if __name__ == "__main__":
         else:
             fn_spikes = "{}_rec{}_blk{}_{}_h".format(sess, rec, blk, site)
             fn_class = "{dir}/tmp/new/{fn}.class_{typ}Cluster".format(dir=prepdir, sbj=sbj, fn=fn_spikes, typ=cluster_type)
-        print "\n{sbj}:{fn_spikes}".format(**locals())
+        print "\n{sbj}:{fn_spikes} ({cluster_type})".format(**locals())
 
         # load task events
         print "\tLoading task data file..."
@@ -224,7 +225,7 @@ if __name__ == "__main__":
                 plt.figure(figsize=(10, 8))
                 plt.subplots_adjust(left=0.08, right=0.96)
                 title = "{} unit {} (Ch {}, {} spikes)".format(fn_spikes, unitID, unit_ch, num_spike)
-                title += "\nbin size: {} spks, bin step: {} spks".format(bin_size, bin_step)
+                title += "\nbin size: {} spks, bin step: {} spks, RPV threshold: {} ms".format(bin_size, bin_step, rpv_threshold)
                 plt.suptitle(title)
                 gs = gridspec.GridSpec(5, 2, width_ratios=[4, 1])
 
@@ -278,22 +279,22 @@ if __name__ == "__main__":
                     plt.xlim(0, recdur)
                     plt.ylim(0, 3)
 
-                ax1 = plt.subplot(gs[6])
-                plt.xlabel("Time (s)")
-                plt.ylabel("Spike size (cov)")
-                plt.plot(bin_times, cov_means[unit_ch], color="black")
-                plt.xlim(0, recdur)
-                plt.ylim(ymin=0)
-                plt.grid(color="gray")
-                if detect_change_point:
-                    ax2 = ax1.twinx()
-                    plt.ylabel("Surprise")
-                    plt.plot(bin_times_pval, np.log10((1.0 - cov_pvals) / cov_pvals), color="magenta")
-                    plt.axhline(y=0, color="magenta", linestyle=":")
-                    plt.xlim(0, recdur)
-                    plt.ylim(-10, 10)
+                # ax1 = plt.subplot(gs[6])
+                # plt.xlabel("Time (s)")
+                # plt.ylabel("Spike size (cov)")
+                # plt.plot(bin_times, cov_means[unit_ch], color="black")
+                # plt.xlim(0, recdur)
+                # plt.ylim(ymin=0)
+                # plt.grid(color="gray")
+                # if detect_change_point:
+                #     ax2 = ax1.twinx()
+                #     plt.ylabel("Surprise")
+                #     plt.plot(bin_times_pval, np.log10((1.0 - cov_pvals) / cov_pvals), color="magenta")
+                #     plt.axhline(y=0, color="magenta", linestyle=":")
+                #     plt.xlim(0, recdur)
+                #     plt.ylim(-10, 10)
 
-                ax1 = plt.subplot(gs[8])
+                ax1 = plt.subplot(gs[6])
                 plt.xlabel("Time (s)")
                 plt.ylabel("Firing rate (1/s)")
                 plt.plot(bin_times, 1.0 / isi_means, color="black")
@@ -307,6 +308,28 @@ if __name__ == "__main__":
                     plt.axhline(y=0, color="magenta", linestyle=":")
                     plt.xlim(0, recdur)
                     plt.ylim(-10, 10)
+
+                plt.subplot(gs[8])
+                plt.xlabel("Time (s)")
+                plt.ylabel("ISI (ms)")
+                isis = np.diff(spike_times) * 1000
+                plt.plot(spike_times[:-1], isis, ",", color="black")
+                plt.axhline(rpv_threshold, color="red")
+                for i_blk, b in enumerate(blks):
+                    if b == 0:
+                        continue
+                    plt.axvspan(ts_blk_on[i_blk], ts_blk_off[i_blk], color=colors_task[tasks_blk[i_blk]], alpha=0.1, linewidth=0)
+                plt.yscale('log')
+                plt.xlim(0, recdur)
+                plt.ylim(0.1, 1000)
+                plt.grid(color="gray")
+                plt.subplot(gs[9])
+                plt.xlabel("Count")
+                plt.ylabel("ISI (log10(ms))")
+                plt.hist(np.log10(isis), bins=200, range=[np.log10(0.1), np.log10(1000)], orientation="horizontal", linewidth=0, color="black")
+                plt.axhline(np.log10(rpv_threshold), color="red")
+                plt.ylim(np.log10(0.1), np.log10(1000))
+                plt.grid(color="gray")
 
                 if savefig:
                     fn_fig = "{}/{}_unit{}.png".format(savedir, fn_spikes, unitID)
