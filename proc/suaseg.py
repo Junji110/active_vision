@@ -308,8 +308,6 @@ def suaseg(spike_times, spike_covs, spike_types, trial_time_ranges, params):
     unit_info = {}
     unitIDs = []
     for unitID in np.unique(spike_types):
-        if unitID != 104:
-            continue
         mask_unit = (spike_types == unitID)
         spike_times_unit = spike_times[mask_unit]
         spike_covs_unit = spike_covs[:, mask_unit]
