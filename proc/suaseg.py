@@ -208,7 +208,7 @@ def periodize_spike_train(spike_times, spike_sizes, params):
     num_bin = bin_edges.size
     unimodalities = np.zeros(num_bin)
     for i, idx_ini in enumerate(bin_edges):
-        gaps = gap(spike_sizes[idx_ini:idx_ini+bin_size, np.newaxis], nrefs=1, ks=[1, 2])
+        gaps = gap(spike_sizes[idx_ini:idx_ini+bin_size, np.newaxis], nrefs=params['GapNRefs'], ks=[1, 2])
         unimodalities[i] = gaps[0] / gaps[1]
 
     smoothing_size = bin_size/bin_step
@@ -451,7 +451,7 @@ def convert_unit_info_to_odml_info(unit_info, params):
     units["End"] = "s"
     sectname = "Dataset/SpikeData"
     props = {sectname: []}
-    for key in ["File", "SamplingRate", "NumChannels", "MinNumSpikes", "MinNumTrials", "SpikeBinSize", "SpikeBinStep", "TrialBinSize", "TrialBinStep", "FDR-q", "RPVThreshold"]:
+    for key in params.keys():
         props[sectname].append({"name": key, "value": params[key], "unit": units[key], "dtype": None})
     for key in ["UnitIDs", "NumUnits"]:
         props[sectname].append({"name": key, "value": unit_info[key], "unit": units[key], "dtype": None})
