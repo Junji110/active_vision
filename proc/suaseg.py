@@ -224,14 +224,8 @@ def periodize_spike_train(spike_times, spike_sizes, params):
     mean_unimodalities = {}
     for periodID, period_edge in period_edges.items():
         mean_unimodalities[periodID] = unimodalities[period_edge[0]:period_edge[1]].mean()
-        if periodID >= 0:
-            idx_ini = 0 if period_edge[0] == 0 else bin_edges[period_edge[0]-1] + bin_size
-            idx_fin = -1 if period_edge[1] == len(unimodalities) else bin_edges[period_edge[1]]
-        else:
-            idx_ini = bin_edges[period_edge[0]]
-            idx_fin = -1 if period_edge[1] == len(unimodalities) else bin_edges[period_edge[1]-1] + bin_size
-        # idx_ini = 0 if period_edge[0] == 0 else bin_edges[period_edge[0]] + bin_size/2
-        # idx_fin = -1 if period_edge[1] == len(unimodalities) else bin_edges[period_edge[1]-1] + bin_size/2
+        idx_ini = 0 if period_edge[0] == 0 else bin_edges[period_edge[0]] + bin_size/2
+        idx_fin = -1 if period_edge[1] == len(unimodalities) else bin_edges[period_edge[1]-1] + bin_size/2
         period_time_ranges[periodID] = [spike_times[idx_ini], spike_times[idx_fin]]
     mean_unimodalities['all'] = unimodalities.mean()
 
