@@ -2,6 +2,7 @@ import os
 import re
 import datetime
 import time
+from collections import defaultdict
 
 import numpy as np
 import scipy
@@ -445,12 +446,15 @@ def delete_keys_from_props(props, del_keys):
 
 
 def convert_unit_info_to_odml_info(unit_info, params):
+    units = defaultdict(lambda: None)
+    units["Start"] = "s"
+    units["End"] = "s"
     sectname = "Dataset/SpikeData"
     props = {sectname: []}
     for key in ["File", "SamplingRate", "NumChannels", "MinNumSpikes", "MinNumTrials", "SpikeBinSize", "SpikeBinStep", "TrialBinSize", "TrialBinStep", "FDR-q", "RPVThreshold"]:
-        props[sectname].append({"name": key, "value": params[key], "unit": "", "dtype": ""})
+        props[sectname].append({"name": key, "value": params[key], "unit": units[key], "dtype": None})
     for key in ["UnitIDs", "NumUnits"]:
-        props[sectname].append({"name": key, "value": unit_info[key], "unit": "", "dtype": ""})
+        props[sectname].append({"name": key, "value": unit_info[key], "unit": units[key], "dtype": None})
     section_info = {
         "Dataset": {"name": "Dataset", "type": "dataset", "subsections": ["SpikeData",]},
         "Dataset/SpikeData": {"name": "SpikeData", "type": "dataset/neural_data", "subsections": []},
@@ -463,7 +467,7 @@ def convert_unit_info_to_odml_info(unit_info, params):
         section_info[sectname_unit] = {"name": unit_label, "type": "dataset/neural_data", "subsections": []}
         props[sectname_unit] = []
         for key in ["Channel", "NumSpikes", "NumTrials", "Start", "End", "MeanUnimodality", "RPV", "PeriodIDs", "NumPeriods"]:
-            props[sectname_unit].append({"name": key, "value": unit_info[unit_label][key], "unit": "", "dtype": ""})
+            props[sectname_unit].append({"name": key, "value": unit_info[unit_label][key], "unit": units[key], "dtype": None})
 
         for periodID in unit_info[unit_label]["PeriodIDs"]:
             period_label = "Period{}".format(periodID)
@@ -472,7 +476,7 @@ def convert_unit_info_to_odml_info(unit_info, params):
             section_info[sectname_period] = {"name": period_label, "type": "dataset/neural_data", "subsections": []}
             props[sectname_period] = []
             for key in ["Channel", "NumSpikes", "NumTrials", "Start", "End", "MeanUnimodality", "RPV", "SegmentIDs", "NumSegments"]:
-                props[sectname_period].append({"name": key, "value": unit_info[unit_label][period_label][key], "unit": "", "dtype": ""})
+                props[sectname_period].append({"name": key, "value": unit_info[unit_label][period_label][key], "unit": units[key], "dtype": None})
 
             for segID in unit_info[unit_label][period_label]["SegmentIDs"]:
                 seg_label = "Segment{}".format(segID)
@@ -481,7 +485,7 @@ def convert_unit_info_to_odml_info(unit_info, params):
                 section_info[sectname_seg] = {"name": seg_label, "type": "dataset/neural_data", "subsections": []}
                 props[sectname_seg] = []
                 for key in ["Channel", "NumSpikes", "NumTrials", "Start", "End", "MeanSurprise", "RPV"]:
-                    props[sectname_seg].append({"name": key, "value": unit_info[unit_label][period_label][seg_label][key], "unit": "", "dtype": ""})
+                    props[sectname_seg].append({"name": key, "value": unit_info[unit_label][period_label][seg_label][key], "unit": units[key], "dtype": None})
 
     return section_info, props
 
@@ -519,7 +523,9 @@ class odMLFactory(object):
             sect.remove(sect.properties[prop['name']])
         elif strict is True:
             raise ValueError("Property '{0}' does not exist in section '{1}'.".format(prop['name'], sect.name))
-        sect.append(odml.Property(**prop))
+        name = prop['name']
+        value = odml.Value(data=prop['value'], unit=prop['unit'], dtype=prop['dtype'])
+        sect.append(odml.Property(name, value))
 
     def __gen_section(self, name, parent=''):
         longname = parent + name
@@ -557,7 +563,7 @@ class odMLFactory(object):
                 raise ValueError("Invalid section name '{0}'".format(sectname))
             else:
                 for prop in sectprops:
-                    self.__add_property(sect, prop, self.strict)
+                    self.__add_property(sect, prop, strict=False)
 
     def get_odml(self, author, version=None):
         metadata = odml.Document(author, datetime.date.today(), version)
@@ -638,8 +644,6 @@ if __name__ == "__main__":
         # construct odML structure and save it in a file
         append_properties_to_unit_info(unit_info, spike_times, spike_covs, spike_types, params)
         section_info, props = convert_unit_info_to_odml_info(unit_info, params)
-        # In recent versions of odML, property constructor does not accept "unit" and "dtype" keyword arguments.
-        delete_keys_from_props(props, ["unit", "dtype"])
         odml_factory = odMLFactory(section_info, strict=False)
         odml_factory.put_values(props)
         filename_odml = "{}/{}_SUA.odml".format(savedir, dataset_name)
