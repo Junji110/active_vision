@@ -93,7 +93,7 @@ def identify_trial_time_ranges(task_events, task_param, sampling_rate):
     return np.array(trial_time_ranges)
 
 
-# functions for spike train segmentation
+# functions for spike train periodization+segmentation
 def gap(data, refs=None, nrefs=10, ks=range(1, 11)):
     """
     # gap.py
@@ -230,15 +230,27 @@ def periodize_spike_train(spike_times, spike_sizes, params):
         else:
             idx_ini = bin_edges[period_edge[0]]
             idx_fin = -1 if period_edge[1] == len(unimodalities) else bin_edges[period_edge[1]-1] + bin_size
+        # idx_ini = 0 if period_edge[0] == 0 else bin_edges[period_edge[0]] + bin_size/2
+        # idx_fin = -1 if period_edge[1] == len(unimodalities) else bin_edges[period_edge[1]-1] + bin_size/2
         period_time_ranges[periodID] = [spike_times[idx_ini], spike_times[idx_fin]]
     mean_unimodalities['all'] = unimodalities.mean()
 
     # import matplotlib.pyplot as plt
-    # plt.plot(spike_times, spike_sizes, 'k,')
-    # plt.gca().twinx()
+    # plt.subplot(211)
     # plt.plot(bin_edges, unimodalities, 'm')
+    # plt.axhline(1.0, color='gray')
+    # for periodID, (idx_ini, idx_fin) in period_edges.items():
+    #     print periodID, idx_ini, idx_fin
+    #     t_ini = bin_edges[idx_ini]
+    #     t_fin = bin_edges[idx_fin-1]
+    #     spancolor = "red" if periodID >= 0 else "blue"
+    #     plt.axvspan(t_ini, t_fin, color=spancolor, alpha=0.1)
+    #     plt.plot((t_ini, t_fin), (mean_unimodalities[periodID], mean_unimodalities[periodID]), color=spancolor)
+    # plt.subplot(212)
+    # plt.plot(spike_times, spike_sizes, 'k,')
     # for periodID, (t_ini, t_fin) in period_time_ranges.items():
-    #     spancolor = "blue" if periodID >= 0 else "red"
+    #     print periodID, t_ini, t_fin
+    #     spancolor = "red" if periodID >= 0 else "blue"
     #     plt.axvspan(t_ini, t_fin, color=spancolor, alpha=0.1)
     #     plt.plot((t_ini, t_fin), (mean_unimodalities[periodID], mean_unimodalities[periodID]), color=spancolor)
     # plt.show()
@@ -302,6 +314,8 @@ def suaseg(spike_times, spike_covs, spike_types, trial_time_ranges, params):
     unit_info = {}
     unitIDs = []
     for unitID in np.unique(spike_types):
+        if unitID != 104:
+            continue
         mask_unit = (spike_types == unitID)
         spike_times_unit = spike_times[mask_unit]
         spike_covs_unit = spike_covs[:, mask_unit]
@@ -466,8 +480,10 @@ def convert_unit_info_to_odml_info(unit_info, params):
         section_info[sectname]["subsections"].append(unit_label)
         section_info[sectname_unit] = {"name": unit_label, "type": "dataset/neural_data", "subsections": []}
         props[sectname_unit] = []
-        for key in ["Channel", "NumSpikes", "NumTrials", "Start", "End", "MeanUnimodality", "RPV", "PeriodIDs", "NumPeriods"]:
+        for key in ["Channel", "NumSpikes", "NumTrials", "Start", "End", "MeanUnimodality", "RPV", "NumPeriods"]:
             props[sectname_unit].append({"name": key, "value": unit_info[unit_label][key], "unit": units[key], "dtype": None})
+        if unit_info[unit_label]["NumPeriods"] > 0:
+            props[sectname_unit].append({"name": "PeriodIDs", "value": unit_info[unit_label]["PeriodIDs"], "unit": units[key], "dtype": None})
 
         for periodID in unit_info[unit_label]["PeriodIDs"]:
             period_label = "Period{}".format(periodID)
@@ -475,8 +491,10 @@ def convert_unit_info_to_odml_info(unit_info, params):
             section_info[sectname_unit]["subsections"].append(period_label)
             section_info[sectname_period] = {"name": period_label, "type": "dataset/neural_data", "subsections": []}
             props[sectname_period] = []
-            for key in ["Channel", "NumSpikes", "NumTrials", "Start", "End", "MeanUnimodality", "RPV", "SegmentIDs", "NumSegments"]:
+            for key in ["Channel", "NumSpikes", "NumTrials", "Start", "End", "MeanUnimodality", "RPV", "NumSegments"]:
                 props[sectname_period].append({"name": key, "value": unit_info[unit_label][period_label][key], "unit": units[key], "dtype": None})
+            if unit_info[unit_label][period_label]["NumSegments"] > 0:
+                props[sectname_period].append({"name": "SegmentIDs", "value": unit_info[unit_label][period_label]["SegmentIDs"], "unit": units[key], "dtype": None})
 
             for segID in unit_info[unit_label][period_label]["SegmentIDs"]:
                 seg_label = "Segment{}".format(segID)
@@ -524,7 +542,10 @@ class odMLFactory(object):
         elif strict is True:
             raise ValueError("Property '{0}' does not exist in section '{1}'.".format(prop['name'], sect.name))
         name = prop['name']
-        value = odml.Value(data=prop['value'], unit=prop['unit'], dtype=prop['dtype'])
+        if isinstance(prop['value'], list):
+            value = prop['value']
+        else:
+            value = odml.Value(data=prop['value'], unit=prop['unit'], dtype=prop['dtype'])
         sect.append(odml.Property(name, value))
 
     def __gen_section(self, name, parent=''):
@@ -610,6 +631,7 @@ def print_metadata(metadata):
 
 
 if __name__ == "__main__":
+    # import parameters from the configuration file
     from suaseg_conf import *
 
     tic = time.time()
@@ -638,7 +660,7 @@ if __name__ == "__main__":
         task_events["evtime"] -= task_events["evtime"][0]
         trial_time_ranges = identify_trial_time_ranges(task_events, task_params, params["SamplingRate"])
 
-        # segment spike trains and store the results in unit_info
+        # periodize+segment spike trains and store the results in a dict: unit_info
         unit_info = suaseg(spike_times, spike_covs, spike_types, trial_time_ranges, params)
 
         # construct odML structure and save it in a file
@@ -651,6 +673,6 @@ if __name__ == "__main__":
         print "\tSUA metadata saved in {0}\n".format(filename_odml)
 
         # # print out the odML structure for a check
-        # print_metadata(odml_factory.get_odml(author, version))
+        # print_metadata(odml_factory.get_odml(odml_author, odml_version))
 
         print "\tProcessing of {} done in {} secs.\n".format(dataset_name, time.time() - tic)
