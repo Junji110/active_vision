@@ -170,17 +170,18 @@ def smooth(data, window_size):
 
 
 def label_thresholded_segments(data, threshold):
-    supth_seg_edges = segment_successive_occurrences(data >= threshold, True)
-    subth_seg_edges = segment_successive_occurrences(data >= threshold, False)
+    condition = data >= threshold
+    supth_seg_edges = segment_successive_occurrences(condition, True)
+    subth_seg_edges = segment_successive_occurrences(condition, False)
 
     # identify segments of stable and unstable rate, and assign segment IDs
     # segment ID 0: when no subthreshold segments are identified, ID 0 is assigned to the whole episode
     # segment ID 1, 2, 3, ...: suprathreshold segments with the longest duration, the 2nd longest, and so on
     # segment ID -1, -2, -3, ...: subthreshold segments with the longest duration, the 2nd longest, and so on
     seg_edges = {}
-    if subth_seg_edges is None:
+    if np.all(condition):
         seg_edges[0] = [0, len(data)]
-    elif supth_seg_edges is None:
+    elif np.all(np.logical_not(condition)):
         seg_edges[-1] = [0, len(data)]
     else:
         # assign negative segment IDs to unstable rate segments
