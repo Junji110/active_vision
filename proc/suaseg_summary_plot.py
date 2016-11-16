@@ -20,8 +20,8 @@ if __name__ == "__main__":
     bin_size = 50.0
     bin_step = 5.0
 
-    # savefig = True
-    savefig = False
+    savefig = True
+    # savefig = False
 
     from suaseg_conf import *
 
@@ -210,4 +210,10 @@ if __name__ == "__main__":
                     ax_segs2.set_xlim(0, block_dur)
                     ax_segs2.set_ylim(0, 0.1)
 
-            plt.show()
+            if savefig:
+                filename_fig = "{}/{}_unit{}.png".format(savedir, odml_name, unitID)
+                plt.savefig(filename_fig)
+                print "\tFigure saved as {}\n".format(filename_fig)
+                plt.close("all")
+            else:
+                plt.show()
