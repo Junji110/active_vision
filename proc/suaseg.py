@@ -460,8 +460,10 @@ def convert_unit_info_to_odml_info(unit_info, params):
     props = {sectname: []}
     for key in params.keys():
         props[sectname].append({"name": key, "value": params[key], "unit": units[key], "dtype": None})
-    for key in ["UnitIDs", "NumUnits"]:
+    for key in ["NumUnits"]:
         props[sectname].append({"name": key, "value": unit_info[key], "unit": units[key], "dtype": None})
+    if unit_info["NumUnits"] > 0:
+        props[sectname].append({"name": "UnitIDs", "value": unit_info["UnitIDs"], "unit": units[key], "dtype": None})
     section_info = {
         "Dataset": {"name": "Dataset", "type": "dataset", "subsections": ["SpikeData",]},
         "Dataset/SpikeData": {"name": "SpikeData", "type": "dataset/neural_data", "subsections": []},
