@@ -60,7 +60,7 @@ if __name__ == "__main__":
         block_dur = task_events["evtime"][-1] / params["SamplingRate"]
         trial_time_ranges = identify_trial_time_ranges(task_events, task_params, params["SamplingRate"])
 
-        unitIDs = [x.data for x in metadata["Dataset"]["SpikeData"].properties["UnitIDs"].values]
+        unitIDs = [int(x.data) for x in metadata["Dataset"]["SpikeData"].properties["UnitIDs"].values]
         for unitID in unitIDs:
             mask_unit = (spike_types == unitID)
             unit_label = "Unit{}".format(unitID)
@@ -175,7 +175,7 @@ if __name__ == "__main__":
             ax_isis_hist.set_ylim(np.log10(0.1), np.log10(1000))
             ax_isis_hist.grid(color="gray")
 
-            periodIDs = [] if num_period ==0 else [x.data for x in sect_unit.properties["PeriodIDs"].values]
+            periodIDs = [] if num_period ==0 else [int(x.data) for x in sect_unit.properties["PeriodIDs"].values]
             for periodID in periodIDs:
                 period_label = "Period{}".format(periodID)
                 sect_period = metadata["Dataset"]["SpikeData"][unit_label][period_label]
@@ -193,7 +193,7 @@ if __name__ == "__main__":
                 ax_periods2.set_xlim(0, block_dur)
                 ax_periods2.set_ylim(0, 2)
 
-                segIDs = [] if num_seg == 0 else [x.data for x in sect_period.properties["SegmentIDs"].values]
+                segIDs = [] if num_seg == 0 else [int(x.data) for x in sect_period.properties["SegmentIDs"].values]
                 for segID in segIDs:
                     seg_label = "Segment{}".format(segID)
                     sect_seg = metadata["Dataset"]["SpikeData"][unit_label][period_label][seg_label]
