@@ -320,7 +320,7 @@ def suaseg(spike_times, spike_covs, spike_types, trial_time_ranges, params):
         if num_trial < params["MinNumTrials"]:
             print "\tUnit {} is active in too few trials ({} spikes, {} trials).\n".format(unitID, num_spike, num_trial)
             continue
-        if num_spike < params["MinNumSpikes"]:
+        if num_spike <= params["MinNumSpikes"]:
             print "\tUnit {} has too few spikes ({} spikes, {} trials).\n".format(unitID, num_spike, num_trial)
             continue
 
