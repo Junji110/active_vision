@@ -8,7 +8,7 @@ from matplotlib import gridspec
 
 from odml.tools.xmlparser import XMLWriter, XMLReader
 
-from proc.suaseg import find_filenames, load_task, identify_trial_time_ranges
+from suaseg import find_filenames, load_task, identify_trial_time_ranges
 
 
 if __name__ == "__main__":
