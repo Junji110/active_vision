@@ -14,6 +14,23 @@ import odml
 
 
 # functions for data loading
+def load_class_header(filename_class, header_line=2):
+    params = {}
+    with open(filename_class, 'r') as f:
+        for i in range(header_line-1):
+            f.readline()
+        for item in f.readline().split():
+            name, value = item.split("=")
+            # Some parameter names are followed by units in square brackets. Get rid of this.
+            if name.endswith("]"):
+                name = name.split("[")[0]
+            try:
+                params[name] = int(value)
+            except ValueError:
+                params[name] = float(value)
+    return params
+
+
 def find_filenames(datadir, subject, session, rec, filetype):
     if filetype not in ['imginfo', 'stimtiming', 'param', 'parameter', 'task', 'daq', 'lvd', 'odml', 'hdf5', 'RF']:
         raise ValueError("Filetype {0} is not supported.".format(filetype))
@@ -417,32 +434,33 @@ def compute_properties(spike_times, spike_covs, params):
     isis = np.diff(spike_times)
     rpv = (isis < rpv_threshold).sum() / np.float(isis.size)
     unit_ch = spike_covs.mean(1).argmax()
-    return unit_ch, rpv
+    snr = spike_covs[unit_ch,:].mean() / params["NoiseLevel"]
+    return unit_ch, rpv, snr
 
 
 def append_properties_to_unit_info(unit_info, spike_times, spike_covs, spike_types, params):
     rpv_threshold = params["RPVThreshold"]
     for unitID in unit_info["UnitIDs"]:
         mask_unit = (spike_types == unitID)
-        channel, rpv = compute_properties(spike_times[mask_unit], spike_covs[:, mask_unit], params)
+        channel, rpv, snr = compute_properties(spike_times[mask_unit], spike_covs[:, mask_unit], params)
         unit_label = "Unit{}".format(unitID)
-        unit_info[unit_label].update({"Channel": channel, "RPV": rpv, })
+        unit_info[unit_label].update({"Channel": channel, "RPV": rpv, "SNR": snr})
 
         for periodID in unit_info[unit_label]["PeriodIDs"]:
             period_label = "Period{}".format(periodID)
             t_ini = unit_info[unit_label][period_label]["Start"]
             t_fin = unit_info[unit_label][period_label]["End"]
             mask_period = mask_unit & (t_ini <= spike_times) & (spike_times <= t_fin)
-            channel, rpv = compute_properties(spike_times[mask_period], spike_covs[:, mask_period], params)
-            unit_info[unit_label][period_label].update({"Channel": channel, "RPV": rpv})
+            channel, rpv, snr = compute_properties(spike_times[mask_period], spike_covs[:, mask_period], params)
+            unit_info[unit_label][period_label].update({"Channel": channel, "RPV": rpv, "SNR": snr})
 
             for segID in unit_info[unit_label][period_label]["SegmentIDs"]:
                 seg_label = "Segment{}".format(segID)
                 t_ini = unit_info[unit_label][period_label][seg_label]["Start"]
                 t_fin = unit_info[unit_label][period_label][seg_label]["End"]
                 mask_seg = mask_period & (t_ini <= spike_times) & (spike_times <= t_fin)
-                channel, rpv = compute_properties(spike_times[mask_seg], spike_covs[:, mask_seg], params)
-                unit_info[unit_label][period_label][seg_label].update({"Channel": channel, "RPV": rpv})
+                channel, rpv, snr = compute_properties(spike_times[mask_seg], spike_covs[:, mask_seg], params)
+                unit_info[unit_label][period_label][seg_label].update({"Channel": channel, "RPV": rpv, "SNR": snr})
 
 
 def delete_keys_from_props(props, del_keys):
@@ -472,7 +490,7 @@ def convert_unit_info_to_odml_info(unit_info, params, units, dtypes):
         section_info[sectname]["subsections"].append(unit_label)
         section_info[sectname_unit] = {"name": unit_label, "type": "dataset/neural_data", "subsections": []}
         props[sectname_unit] = []
-        for key in ["Channel", "NumSpikes", "NumTrials", "Start", "End", "MeanUnimodality", "RPV", "NumPeriods"]:
+        for key in ["Channel", "NumSpikes", "NumTrials", "Start", "End", "MeanUnimodality", "RPV", "SNR", "NumPeriods"]:
             props[sectname_unit].append({"name": key, "value": unit_info[unit_label][key], "unit": units[key], "dtype": dtypes[key]})
         if unit_info[unit_label]["NumPeriods"] > 0:
             props[sectname_unit].append({"name": "PeriodIDs", "value": unit_info[unit_label]["PeriodIDs"], "unit": None, "dtype": None})
@@ -483,7 +501,7 @@ def convert_unit_info_to_odml_info(unit_info, params, units, dtypes):
             section_info[sectname_unit]["subsections"].append(period_label)
             section_info[sectname_period] = {"name": period_label, "type": "dataset/neural_data", "subsections": []}
             props[sectname_period] = []
-            for key in ["Channel", "NumSpikes", "NumTrials", "Start", "End", "MeanUnimodality", "RPV", "NumSegments"]:
+            for key in ["Channel", "NumSpikes", "NumTrials", "Start", "End", "MeanUnimodality", "RPV", "SNR", "NumSegments"]:
                 props[sectname_period].append({"name": key, "value": unit_info[unit_label][period_label][key], "unit": units[key], "dtype": dtypes[key]})
             if unit_info[unit_label][period_label]["NumSegments"] > 0:
                 props[sectname_period].append({"name": "SegmentIDs", "value": unit_info[unit_label][period_label]["SegmentIDs"], "unit": None, "dtype": None})
@@ -494,7 +512,7 @@ def convert_unit_info_to_odml_info(unit_info, params, units, dtypes):
                 section_info[sectname_period]["subsections"].append(seg_label)
                 section_info[sectname_seg] = {"name": seg_label, "type": "dataset/neural_data", "subsections": []}
                 props[sectname_seg] = []
-                for key in ["Channel", "NumSpikes", "NumTrials", "Start", "End", "MeanSurprise", "RPV"]:
+                for key in ["Channel", "NumSpikes", "NumTrials", "Start", "End", "MeanSurprise", "RPV", "SNR"]:
                     props[sectname_seg].append({"name": key, "value": unit_info[unit_label][period_label][seg_label][key], "unit": units[key], "dtype": dtypes[key]})
 
     return section_info, props
@@ -637,7 +655,9 @@ if __name__ == "__main__":
         params["File"] = filename_class
         print "\tLoading spike data..."
         spike_data = np.genfromtxt(filename_class, skip_header=2, dtype=None, names=True)
+        spike_params = load_class_header(filename_class)
         print "\t...done.\n"
+        params["NoiseLevel"] = spike_params["NoiseLevel"] / 4.5
         spike_times = spike_data['event_time']
         spike_covs = np.array([spike_data["ch{}".format(i_ch)] for i_ch in range(params["NumChannels"])])
         spike_types = spike_data['type']
