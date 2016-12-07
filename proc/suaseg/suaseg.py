@@ -314,7 +314,7 @@ def suaseg(spike_times, spike_covs, spike_types, trial_time_ranges, params):
         spike_covs_unit = spike_covs[:, mask_unit]
         unit_ch = spike_covs_unit.mean(1).argmax()
 
-        t_ini, t_fin = spike_times[[0, -1]]
+        t_ini, t_fin = spike_times_unit[[0, -1]]
         num_trial = ((t_ini < trial_time_ranges[:, 0]) & (trial_time_ranges[:, 1] < t_fin)).sum()
         num_spike = spike_times_unit.size
         if num_trial < params["MinNumTrials"]:
