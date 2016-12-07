@@ -27,8 +27,11 @@ params["RPVThreshold"] = 0.001  # ISI refractory period violation threshold in s
 
 # odML parameters
 odml_units = defaultdict(lambda: None)
+odml_units["SamplingRate"] = "Hz"
 odml_units["Start"] = "s"
 odml_units["End"] = "s"
+odml_units["RPVThreshold"] = "s"
+odml_units["NoiseLevel"] = "uV"
 odml_dtypes = defaultdict(lambda: None)
 odml_dtypes["Channel"] = "int"
 odml_dtypes["NumSpikes"] = "int"
@@ -38,6 +41,7 @@ odml_dtypes["End"] = "float"
 odml_dtypes["MeanUnimodality"] = "float"
 odml_dtypes["MeanSurprise"] = "float"
 odml_dtypes["RPV"] = "float"
+odml_dtypes["SNR"] = "float"
 
 odml_author = ""
 odml_version = 0.1
@@ -47,7 +51,8 @@ datasets = [
     # format: [sbj, sess, rec, blk, site]
     ["SATSUKI", "20151027", 5, 2, "V1"],
     ["SATSUKI", "20151027", 5, 2, "IT"],
-    # ["SATSUKI", "20151110", 7, 2, "V1"],
-    # ["SATSUKI", "20151110", 7, 2, "IT"],
+    ["SATSUKI", "20151110", 7, 2, "V1"],
+    ["SATSUKI", "20151110", 7, 2, "IT"],
+    ["SATSUKI", "20151113", 7, 2, "V1"],
 ]
 
