@@ -8,7 +8,7 @@ from matplotlib import gridspec
 
 from odml.tools.xmlparser import XMLWriter, XMLReader
 
-from suaseg import find_filenames, load_task, identify_trial_time_ranges
+from suaseg import load_class_header, find_filenames, load_task, identify_trial_time_ranges
 
 
 if __name__ == "__main__":
@@ -38,6 +38,7 @@ if __name__ == "__main__":
 
         num_ch = metadata["Dataset"]["SpikeData"].properties["NumChannels"].value.data
         rpv_threshold = metadata["Dataset"]["SpikeData"].properties["RPVThreshold"].value.data * 1000
+        noise_level = metadata["Dataset"]["SpikeData"].properties["NoiseLevel"].value.data
 
         # load spike data and extract necessary information
         filename_class = metadata["Dataset"]["SpikeData"].properties["File"].value.data
@@ -142,6 +143,7 @@ if __name__ == "__main__":
             ax_covs.grid(color="gray")
             ax_covs_hist.hist(spike_covs[unit_ch, mask_unit], bins=200, range=[0, 200], orientation="horizontal", linewidth=0, color="black")
             ax_covs_hist.grid(color="gray")
+            ax_covs.axhline(y=noise_level*4.5, color="red", linestyle="--")
 
             ax_periods.plot(bin_times, firing_rates, 'k-')
             for t_ini, t_fin in trial_time_ranges:
