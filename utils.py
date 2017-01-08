@@ -5,13 +5,16 @@ import numpy as np
 import scipy.io as spio
 import h5py
 
-def find_filenames(datadir, subject, session, rec, filetype):
+def find_filenames(datadir, subject, session, rec, filetype, pc=None):
     if filetype not in ['imginfo', 'stimtiming', 'param', 'parameter', 'task', 'daq', 'lvd', 'odml', 'hdf5', 'RF']:
         raise ValueError("Filetype {0} is not supported.".format(filetype))
 
     if filetype in ['daq', 'lvd', 'hdf5', 'odml']:
         searchdir = "{dir}/{sbj}/{sess}".format(dir=datadir, sbj=subject, sess=session)
-        re_filename = re.compile('{sess}.*_rec{rec}.*\.{filetype}$'.format(sess=session, rec=rec, filetype=filetype))
+        if filetype in ['lvd',] and pc in ['pc1', 'pc2', 'pc3']:
+            re_filename = re.compile('{session}.*_rec{rec}.*{pc}\.{filetype}$'.format(**locals()))
+        else:
+            re_filename = re.compile('{sess}.*_rec{rec}.*\.{filetype}$'.format(sess=session, rec=rec, filetype=filetype))
     elif filetype in ['RF',]:
         searchdir = "{dir}/{sbj}/{sess}".format(dir=datadir, sbj=subject, sess=session)
         re_filename = re.compile("{0}{1}.*".format(filetype, session))
