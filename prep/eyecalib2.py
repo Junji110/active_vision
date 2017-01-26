@@ -14,9 +14,9 @@ from scipy.io import loadmat
 import odml
 from odml.tools.xmlparser import XMLWriter, XMLReader
 
-import daqread
-import lvdread
-import hdf5read
+# import daqread
+# import lvdread
+# import hdf5read
 
 from parameters.eyecalib2 import *
 
@@ -43,6 +43,25 @@ def gen_transform_from_block(method, param, datadir, sess, rec, blk, ignore=[-1]
             tf_y = interpolate.Rbf(actual_avr[:, 0], actual_avr[:, 1], ideal_avr[:, 1], function=str(method))
 
     return tf_x, tf_y
+
+
+def eyecoil2eyepos(eyecoil, calib_coeffs, calib_order=2, verbose=False):
+    if callable(calib_coeffs[0]) and callable(calib_coeffs[1]):
+        volt2deg_x, volt2deg_y = calib_coeffs
+    else:
+        calib_coeffs_arr = np.array(calib_coeffs).reshape((2,6)).T
+        volt2deg_x = polynomial(calib_order, calib_coeffs_arr[:, 0])
+        volt2deg_y = polynomial(calib_order, calib_coeffs_arr[:, 1])
+
+    # transformation from eye coil signal to eye position
+    if verbose:
+        print "Eye coil signal transformation..."
+    eyepos = np.array([volt2deg_x(eyecoil[:, 0], eyecoil[:, 1]), volt2deg_y(eyecoil[:, 0], eyecoil[:, 1])])
+    if verbose:
+        print "\t...done."
+
+    return eyepos
+
 
 def polynomial(order, coeffs):
     '''

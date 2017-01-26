@@ -4,7 +4,7 @@ import numpy as np
 import eyecalib2
 
 
-def eyecoil2eyepos(eyecoil, Fs, calib_coeffs, window_length=199, polyorder=2, calib_order=2, verbose=False):
+def eyecoil2eyepos(eyecoil, calib_coeffs, calib_order=2, verbose=False):
     def bivariate_polynomial(order, coeffs):
         '''
         Return a bivariate polynomial function of given order and coefficients. For
@@ -226,7 +226,8 @@ def main(eyecoil, Fs, calib_coeffs, param, datalen_max=10000000, seg_overlap=100
         eyecoil_seg = eyecoil[idx_ini:idx_fin]
     
         # compute eye position and its derivatives from eye coil signal
-        eyepos = eyecoil2eyepos(eyecoil_seg, Fs, calib_coeffs, calib_order=calib_order, verbose=verbose)
+        # eyepos = eyecoil2eyepos(eyecoil_seg, Fs, calib_coeffs, calib_order=calib_order, verbose=verbose)
+        eyepos = eyecoil2eyepos(eyecoil_seg, calib_coeffs, calib_order=calib_order, verbose=verbose)
         eyepos, eyevelo, eyeaccl = eyepos_derivation(eyepos, derivorder=(0, 1, 2), window_length=param['savgol_window_length'], polyorder=param['savgol_polyorder'], fs=Fs, verbose=verbose)
 
         # extract eye events
