@@ -9,15 +9,14 @@ def find_filenames(datadir, subject, session, rec, filetype, pc=None):
     if filetype not in ['imginfo', 'stimtiming', 'param', 'parameter', 'task', 'daq', 'lvd', 'odml', 'hdf5', 'RF']:
         raise ValueError("Filetype {0} is not supported.".format(filetype))
 
-    if filetype in ['daq', 'lvd', 'hdf5', 'odml']:
+    if filetype in ['daq', 'lvd', 'hdf5', 'odml', 'RF']:
         searchdir = "{dir}/{sbj}/{sess}".format(dir=datadir, sbj=subject, sess=session)
-        if filetype in ['lvd',] and pc in ['pc1', 'pc2', 'pc3']:
+        if filetype in ['RF',]:
+            re_filename = re.compile("{0}{1}.*".format(filetype, session))
+        elif filetype in ['lvd', 'hdf5'] and pc in ['pc1', 'pc2', 'pc3']:
             re_filename = re.compile('{session}.*_rec{rec}.*{pc}\.{filetype}$'.format(**locals()))
         else:
-            re_filename = re.compile('{sess}.*_rec{rec}.*\.{filetype}$'.format(sess=session, rec=rec, filetype=filetype))
-    elif filetype in ['RF',]:
-        searchdir = "{dir}/{sbj}/{sess}".format(dir=datadir, sbj=subject, sess=session)
-        re_filename = re.compile("{0}{1}.*".format(filetype, session))
+            re_filename = re.compile('{session}.*_rec{rec}.*\.{filetype}$'.format(**locals()))
     else:
         searchdir = "{dir}/{sbj}/{sess}/{sess}_rec{rec}".format(dir=datadir, sbj=subject, sess=session, rec=rec)
         re_filename = re.compile(".*{0}.*".format(filetype))
