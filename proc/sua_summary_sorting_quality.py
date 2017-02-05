@@ -55,6 +55,12 @@ def gap(data, refs=None, nrefs=10, ks=range(1, 11)):
     return gaps
 
 
+def smooth(data, window_size):
+    data_padded = np.hstack([[data[0],] * ((window_size - 1) / 2), data, [data[-1], ] * ((window_size - 1) / 2)])
+    window = np.bartlett(window_size)
+    return np.convolve(data_padded, window/window.sum(), mode="valid")
+
+
 if __name__ == "__main__":
     # file information
     datasetdir = "/home/ito/datasets/osaka"
@@ -64,8 +70,8 @@ if __name__ == "__main__":
 
     # analysis parameters
     sampling_rate = 20000.0
-    bin_size = 200  # bin width in number of spikes
-    bin_step = 20  # bin step in number of spikes
+    bin_size = 500  # bin width in number of spikes
+    bin_step = 50  # bin step in number of spikes
     num_bin_hist = 40
     rpv_threshold = 1.0  # refractory period voilation threshold in ms
 
@@ -181,7 +187,7 @@ if __name__ == "__main__":
                 isi_means = np.zeros(num_bin)
                 spike_size_hist = np.zeros((num_bin_hist, num_bin))
                 if estimate_nums_clst:
-                    nums_clst = np.zeros(num_bin)
+                    unimodality = np.zeros(num_bin)
                 if detect_change_point:
                     bin_times_pval = np.empty(num_bin)
                     cov_pvals = np.zeros(num_bin)
@@ -213,7 +219,7 @@ if __name__ == "__main__":
 
                     if estimate_nums_clst:
                         gaps = gap(cov[unit_ch][:, np.newaxis], nrefs=1, ks=[1, 2])
-                        nums_clst[i] = gaps.argmax() + 1
+                        unimodality[i] = gaps[0] / gaps[1]
 
                     if i % 100 == 99:
                         print "\t...{} of {} bins processed...".format(i+1, len(bin_edges))
@@ -275,7 +281,12 @@ if __name__ == "__main__":
                 if estimate_nums_clst:
                     ax2 = ax1.twinx()
                     plt.ylabel("# of clusters")
-                    plt.plot(bin_times, nums_clst, color="magenta")
+                    smoothing_size = bin_size/bin_step
+                    if smoothing_size % 2 == 0:
+                        smoothing_size -= 1
+                    plt.plot(bin_times, smooth(unimodality, smoothing_size), color="magenta")
+                    plt.plot(bin_times, unimodality, color="magenta", alpha=0.5)
+                    plt.axhline(y=1, color="magenta", linestyle=":")
                     plt.xlim(0, recdur)
                     plt.ylim(0, 3)
 
