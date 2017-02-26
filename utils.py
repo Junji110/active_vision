@@ -197,7 +197,7 @@ def get_stiminfo(species, stimsetdir, imgIDs, tasktype, stim_size=None, pxlperde
 
     return objID, objpos, objsize, bgID, objdeg, objnum
 
-def get_eyeevent_info(eye_events, stiminfo, task_events, param, minlat=0, objdeg=None, objnum=None, pairing=None, reject_eccentric_trials=False, fold=(1, 1)):
+def get_eyeevent_info(eye_events, stiminfo, task_events, param, minlat=0, objdeg=None, objnum=None, pairing=None, reject_eccentric_trials=None, fold=(1, 1)):
     objID, objpos, objsize, bgID, objdeg_stim, objnum_stim = stiminfo
 
     fixinfo = {'trialID': [], 'imgID': [], 'bgID': [], 'on': [], 'off': [], 'dur': [], 'x': [], 'y': [], 'objID': [], 'obj_dist': [], 'obj_pos_x': [], 'obj_pos_y': [], 'order': []}
@@ -227,9 +227,13 @@ def get_eyeevent_info(eye_events, stiminfo, task_events, param, minlat=0, objdeg
             continue
 
         # reject trials without center object
-        if reject_eccentric_trials:
-            if np.sqrt((objpos[imgID][0]**2).sum()) >= 1:
-                continue
+        if reject_eccentric_trials is not None:
+            if reject_eccentric_trials:
+                if np.sqrt((objpos[imgID][0]**2).sum()) >= 1:
+                    continue
+            else:
+                if np.any([np.sqrt((pos**2).sum()) < 1 for pos in objpos[imgID]]):
+                    continue
 
         # skip trials according to fold
         if i_trial % fold[0] != fold[1] - 1:
