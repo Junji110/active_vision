@@ -11,6 +11,13 @@ import neo
 
 import stats
 
+def gen_tapered_window(len_window, len_taper, taper_func=np.hamming):
+    window = np.ones(len_window)
+    window[:len_taper] = taper_func(len_taper * 2)[:len_taper]
+    window[-len_taper:] = taper_func(len_taper * 2)[-len_taper:]
+    return window
+
+
 def butterworth_filter(signal, Fs, highpassfreq=None, lowpassfreq=None, order=4, filtfunc='filtfilt'):
     """
     Apply Butterworth filter to a given signal. Filter type is determined
