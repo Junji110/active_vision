@@ -18,6 +18,20 @@ def gen_tapered_window(len_window, len_taper, taper_func=np.hamming):
     return window
 
 
+def gen_segment_indices(idx_trig, idx_range):
+    idxs_segments = []
+    idx_ini, idx_fin = idx_range
+    for i in idx_trig:
+        idxs_segments.extend(range(i+idx_ini, i+idx_fin))
+    return np.array(idxs_segments)
+
+
+def segment_sequence(data, idx_trig, idx_range):
+    data_asarray = np.asarray(data)
+    idx_pick =  gen_segment_indices(idx_trig, idx_range)
+    return data_asarray[idx_pick].reshape((len(idx_trig), -1))
+
+
 def butterworth_filter(signal, Fs, highpassfreq=None, lowpassfreq=None, order=4, filtfunc='filtfilt'):
     """
     Apply Butterworth filter to a given signal. Filter type is determined
@@ -34,9 +48,10 @@ def butterworth_filter(signal, Fs, highpassfreq=None, lowpassfreq=None, order=4,
     Fs: float
         sampling rate of the signal
     highpassfreq: float
-        lower boundary of the pass-band.
+        lower boundary of the pass-band. Negative values are replaced by None (i.e., no highpass filtering).
     lowpassreq: float
-        higher boundary of the pass-band.
+        higher boundary of the pass-band. Values larger than Fs/2 (the Nyquist frequency) are replaced by None (i.e.,
+        no lowpass filtering.
     order: int (default: 4)
         Order of Butterworth filter.
     filtfunc: string (default: 'filtfilt')
@@ -58,6 +73,10 @@ def butterworth_filter(signal, Fs, highpassfreq=None, lowpassfreq=None, order=4,
         raise ValueError("filtfunc must to be either 'filtfilt' or 'lfilter'")
     
     # set parameters
+    if highpassfreq <= 0:
+        highpassfreq = None
+    if lowpassfreq >= Fs / 2:
+        lowpassfreq = None
     if lowpassfreq and highpassfreq:
         if highpassfreq < lowpassfreq:
             Wn = (highpassfreq / Fn, lowpassfreq / Fn)
