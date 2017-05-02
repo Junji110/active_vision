@@ -197,14 +197,18 @@ def get_stiminfo(species, stimsetdir, imgIDs, tasktype, stim_size=None, pxlperde
 
     return objID, objpos, objsize, bgID, objdeg, objnum
 
-def get_eyeevent_info(eye_events, stiminfo, task_events, param, minlat=0, objdeg=None, objnum=None, pairing=None, reject_eccentric_trials=None, fold=(1, 1)):
+def get_eyeevent_info(eye_events, stiminfo, task_events, param, minlat=0, objdeg=None, objnum=None, pairing=None,
+                      reject_eccentric_trials=None, fold=(1, 1), maxfixdur=20000, sampling_rate=1):
     objID, objpos, objsize, bgID, objdeg_stim, objnum_stim = stiminfo
 
     fixinfo = {'trialID': [], 'imgID': [], 'bgID': [], 'on': [], 'off': [], 'dur': [], 'x': [], 'y': [], 'objID': [], 'obj_dist': [], 'obj_pos_x': [], 'obj_pos_y': [], 'order': []}
     sacinfo = {'trialID': [], 'imgID': [], 'bgID': [], 'on': [], 'off': [], 'dur': [], 'x_on': [], 'y_on': [], 'x_off': [], 'y_off': [], 'amp': [], 'angle': [], 'velo': [], 'accl': [], 'objID_on': [], 'objID_off': [], 'obj_dist_on': [], 'obj_dist_off': [], 'obj_pos_x_on': [], 'obj_pos_y_on': [], 'obj_pos_x_off': [], 'obj_pos_y_off': [], 'order': []}
 
+    if pairing is not None:
+        eye_events = extract_fixsac_pair(eye_events, pairing)
+
     mask_fix = eye_events['eventID'] == 200
-    # mask_fix = mask_fix & ((eye_events['off'] - eye_events['on']) < np.int(1.0 * 20000))
+    # mask_fix = mask_fix & ((eye_events['off'] - eye_events['on']) < maxfixlen)
     mask_sac = eye_events['eventID'] == 100
 
     for i_trial in range(param['num_trials']):
@@ -242,7 +246,13 @@ def get_eyeevent_info(eye_events, stiminfo, task_events, param, minlat=0, objdeg
         # pick up fixations during the free viewing period
         clkcnt_img_on = taskev_trial['evtime'][taskev_trial['evID'] == 311][0]
         clkcnt_img_off = taskev_trial['evtime'][taskev_trial['evID'] == 312][0]
-        mask_fv = (clkcnt_img_on + minlat <= eye_events['on']) & (eye_events['on'] < clkcnt_img_off)
+        minlatlen = int(minlat * sampling_rate)
+        if pairing == "sacfix":
+            mask_fv = (clkcnt_img_on + minlatlen <= eye_events['on']) & (eye_events['on'] < clkcnt_img_off)
+        elif pairing == "fixsac":
+            mask_fv = (clkcnt_img_on <= eye_events['on']) & (eye_events['off'] < clkcnt_img_off)
+        else:
+            mask_fv = (clkcnt_img_on + minlatlen <= eye_events['on']) & (eye_events['off'] < clkcnt_img_off)
         fix_trial = eye_events[mask_fix & mask_fv]
 
         # skip trials with no fixations
@@ -250,17 +260,19 @@ def get_eyeevent_info(eye_events, stiminfo, task_events, param, minlat=0, objdeg
             continue
 
         # skip trials with fixations longer than 1 sec (indication of drowsiness)
-        if (fix_trial['off'] - fix_trial['on']).max() > np.int(1.0 * 20000):
-            continue
+        if maxfixdur is not None:
+            maxfixlen = int(maxfixdur * sampling_rate)
+            if (fix_trial['off'] - fix_trial['on']).max() > maxfixlen:
+                continue
 
         # store fixation parameters in the buffer
         fixinfo['trialID'].extend([trialID] * len(fix_trial))
         fixinfo['imgID'].extend([imgID] * len(fix_trial))
         fixinfo['bgID'].extend([bgID[imgID]] * len(fix_trial))
         fixinfo['order'].extend(range(len(fix_trial)))
-        fixinfo['on'].extend(fix_trial['on'] - clkcnt_img_on)
-        fixinfo['off'].extend(fix_trial['off'] - clkcnt_img_on)
-        fixinfo['dur'].extend(fix_trial['off'] - fix_trial['on'])
+        fixinfo['on'].extend((fix_trial['on']-clkcnt_img_on) / sampling_rate)
+        fixinfo['off'].extend((fix_trial['off']-clkcnt_img_on) / sampling_rate)
+        fixinfo['dur'].extend((fix_trial['off']-fix_trial['on']) / sampling_rate)
 
         fixpos = np.array((fix_trial['param1'], fix_trial['param2'])).swapaxes(0, 1)
         fixinfo['x'].extend(fixpos[:, 0])
@@ -274,28 +286,23 @@ def get_eyeevent_info(eye_events, stiminfo, task_events, param, minlat=0, objdeg
         fixinfo['obj_pos_y'].extend(objpos[imgID][argmin, 1])
 
         # pick up saccades during the free viewing period
-        if pairing is None:
-            sac_trial = eye_events[mask_sac & mask_fv]
-        else:
+        if pairing == "sacfix":
             idx_fix = np.where(mask_fix & mask_fv)[0]
-            mask_sac_paired = np.zeros_like(eye_events, bool)
-            if pairing == "sacfix":
-                mask_sac_paired[idx_fix - 1] = True
-            elif pairing == "fixsac":
-                mask_sac_paired[idx_fix + 1] = True
-            else:
-                raise ValueError("pairing must be either 'sacfix' or 'fixsac'")
-            # sac_trial = eye_events[mask_sac_paired & mask_fv]
-            sac_trial = eye_events[mask_sac_paired]
+            sac_trial = eye_events[idx_fix - 1]
+        elif pairing == "fixsac":
+            idx_fix = np.where(mask_fix & mask_fv)[0]
+            sac_trial = eye_events[idx_fix + 1]
+        else:
+            sac_trial = eye_events[mask_sac & mask_fv]
 
         # store saccade parameters in the buffer
         sacinfo['trialID'].extend([trialID] * len(sac_trial))
         sacinfo['imgID'].extend([imgID] * len(sac_trial))
         sacinfo['bgID'].extend([bgID[imgID]] * len(sac_trial))
         sacinfo['order'].extend(range(len(sac_trial)))
-        sacinfo['on'].extend(sac_trial['on'] - clkcnt_img_on)
-        sacinfo['off'].extend(sac_trial['off'] - clkcnt_img_on)
-        sacinfo['dur'].extend(sac_trial['off'] - sac_trial['on'])
+        sacinfo['on'].extend((sac_trial['on']-clkcnt_img_on) / sampling_rate)
+        sacinfo['off'].extend((sac_trial['off']-clkcnt_img_on) / sampling_rate)
+        sacinfo['dur'].extend((sac_trial['off']-sac_trial['on']) / sampling_rate)
         sacinfo['velo'].extend(sac_trial['param1'])
         sacinfo['accl'].extend(sac_trial['param2'])
 
