@@ -347,6 +347,18 @@ def get_sactype(sacinfo, threshold):
             return 0  # intra-object saccade
     return np.array([_sactype(*x) for x in zip(sacinfo['objID_on'], sacinfo['objID_off'], sacinfo['obj_dist_on'], sacinfo['obj_dist_off'])])
 
+def get_intra_obj_order(sacinfo, fixinfo, sactype):
+    # identify order of saccades within object
+    intra_obj_order = -np.ones_like(sactype, int)
+    intra_obj_order[(sactype == 2) | (sactype == 4)] = 0
+    intra_obj_order[(sactype == 1) | (sactype == 3)] = 1
+    for i in range(len(sactype)-1):
+        if fixinfo['off'][i] != sacinfo['on'][i+1]:
+            continue
+        if intra_obj_order[i] >= 1 and sactype[i+1] == 0:
+            intra_obj_order[i+1] = intra_obj_order[i] + 1
+    return intra_obj_order
+
 def extract_fixsac_pair(eye_events, mode="fixsac"):
     idx_fix_all = np.where(eye_events['eventID'] == 200)[0]
     idx_sac_all = np.where(eye_events['eventID'] == 100)[0]
