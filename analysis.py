@@ -338,6 +338,28 @@ def smoothing_matrix_3p(N_ch):
             smthmat[ch][ch-1:ch+2] = [1, 2, 1]
     return smthmat / 4.
 
+def interpolation_matrix(N_ch, badch):
+    '''
+    Interpolate values in bad channels keeping the 2nd derivative smooth.
+    NOTE: bad channels must be separated at least by 2 channels.
+    '''
+    if not (0 <= min(badch) and max(badch) < N_ch):
+        raise ValueError("Bad channel ID must be within the range of [0, %d]" % N_ch)
+
+    itplmat = np.eye(N_ch)
+    for ch in badch:
+        if ch == 0:
+            itplmat[ch][0:3] = [0., 2., -1.]
+        elif ch == 1:
+            itplmat[ch][0:4] = [1./3, 0., 1., -1./3]
+        elif ch == N_ch - 2:
+            itplmat[ch][N_ch-4:N_ch] = [-1./3, 1., 0., 1./3]
+        elif ch == N_ch - 1:
+            itplmat[ch][N_ch-3:N_ch] = [-1., 2., 0.]
+        else:
+            itplmat[ch][ch-2:ch+3] = [-1./6, 2./3, 0, 2./3, -1./6]
+    return itplmat
+
 def welch(x, y, fs=1.0, window='hanning', nperseg=256, noverlap=None,
           nfft=None, detrend='constant', scaling='density', axis=-1):
         """
