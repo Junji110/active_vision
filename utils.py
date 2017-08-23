@@ -359,6 +359,21 @@ def get_intra_obj_order(sacinfo, fixinfo, sactype):
             intra_obj_order[i+1] = intra_obj_order[i] + 1
     return intra_obj_order
 
+def get_intra_obj_order_rev(sacinfo, fixinfo, sactype):
+    # identify order of saccades within object
+    sactype_rev = sactype[::-1]
+    intra_obj_order_rev = -np.ones_like(sactype_rev, int)
+    intra_obj_order_rev[(sactype_rev == 3) | (sactype_rev == 4)] = 0
+    intra_obj_order_rev[(sactype_rev == 1) | (sactype_rev == 2)] = 1
+    sac_on = sacinfo['on'][-1:0:-1]
+    fix_off = fixinfo['off'][-2::-1]
+    for i in range(len(sactype_rev)-1):
+        if fix_off[i] != sac_on[i]:
+            continue
+        if intra_obj_order_rev[i] >= 1 and sactype_rev[i+1] == 0:
+            intra_obj_order_rev[i+1] = intra_obj_order_rev[i] + 1
+    return intra_obj_order_rev[::-1]
+
 def extract_fixsac_pair(eye_events, mode="fixsac"):
     idx_fix_all = np.where(eye_events['eventID'] == 200)[0]
     idx_sac_all = np.where(eye_events['eventID'] == 100)[0]
