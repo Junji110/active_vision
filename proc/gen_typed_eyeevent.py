@@ -414,13 +414,13 @@ if __name__ == "__main__":
                           ]
         eye_events_typed = np.recarray((num_sac + num_fix,), dtype=dtype_eyeevent)
 
-        # --- fill saccade info
+        # --- fill the array with saccade info
         eye_events_typed['eventID'][:num_sac] = 100
         for key in sacinfo:
             if key in eye_events_typed.dtype.names:
                 eye_events_typed[key][:num_sac] = sacinfo[key]
 
-        # --- fill fixation info
+        # --- fill the array with fixation info
         eye_events_typed['eventID'][num_sac:num_eyeevent] = 200
         for key in fixinfo:
             if key in eye_events_typed.dtype.names:
