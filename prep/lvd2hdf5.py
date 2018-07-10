@@ -25,7 +25,7 @@ if __name__ == "__main__":
     savedir = arg.hdf5dir
 
     for sbj, sess, rec, pc in datasets:
-        dataset_name = "{sbj}:{sess}_rec{rec}".format(**locals())
+        dataset_name = "{sbj}:{sess}_rec{rec}_{pc}".format(**locals())
         print "\n{dataset_name} being processed...".format(**locals())
 
         # --- find filenames
