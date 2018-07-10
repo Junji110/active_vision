@@ -35,6 +35,7 @@ def find_filenames(datadir, subject, session, rec, filetype):
     else:
         return fn_found
 
+
 def load_odml(fn_odml, blk):
     with open(fn_odml, 'r') as fd:
         metadata = odmlparser.XMLReader().fromFile(fd)
@@ -50,6 +51,7 @@ def load_odml(fn_odml, blk):
     }
 
     return param
+
 
 def load_task(fn_task, blk):
     convfunc = lambda x: long(x)
@@ -74,11 +76,13 @@ def load_task(fn_task, blk):
     param = dict(num_trials=num_trials, success=success, stimID=stimID)
     return events, param
 
+
 def load_eyevex(fn_eyevex):
     convfunc = lambda x: long(x)
     converters = {'on': convfunc, 'off': convfunc}
     eyeevents = np.genfromtxt(fn_eyevex, names=True, dtype=None, converters=converters)
     return eyeevents
+
 
 def load_imgmat_monkey(stimsetdir, imgIDs):
     objID = {}
@@ -105,6 +109,7 @@ def load_imgmat_monkey(stimsetdir, imgIDs):
         objsize[imgID] = np.array(zip(info.object_x_size, info.object_y_size), int)
 
     return objID, objpos, objsize, bgID
+
 
 def load_imgmat_human(stimsetdir, imgIDs):
     objID = {}
@@ -138,6 +143,7 @@ def load_imgmat_human(stimsetdir, imgIDs):
 
     return objID, objpos, objsize, bgID
 
+
 def get_stiminfo(species, stimsetdir, imgIDs, stim_size=None, pxlperdeg=None):
     if not os.path.exists(stimsetdir):
         raise ValueError("Stimulus set directory {} not found.".format(stimsetdir))
@@ -165,6 +171,7 @@ def get_stiminfo(species, stimsetdir, imgIDs, stim_size=None, pxlperdeg=None):
 
     return objID, objpos, objsize, bgID
 
+
 def add_focus_of_attraction(stiminfo, focus_of_attraction):
     objID, objpos, objsize, bgID = stiminfo
     imgIDs = objID.keys()
@@ -175,6 +182,7 @@ def add_focus_of_attraction(stiminfo, focus_of_attraction):
         num_foas = foas.shape[0]
         objpos[imgID] = np.vstack((objpos[imgID], np.array(foas)))
         objID[imgID] = np.hstack((objID[imgID], np.arange(-1, -num_foas-1, -1)))
+
 
 def discard_artifact_saccade(eye_events, A, B, plot=False):
     idx_fix_all = np.where(eye_events['eventID'] == 200)[0]
@@ -193,6 +201,7 @@ def discard_artifact_saccade(eye_events, A, B, plot=False):
     idx_all.sort()
     return eye_events[idx_all]
 
+
 def extract_fixsac_pair(eye_events):
     idx_fix_all = np.where(eye_events['eventID'] == 200)[0]
     idx_sac_all = np.where(eye_events['eventID'] == 100)[0]
@@ -201,6 +210,7 @@ def extract_fixsac_pair(eye_events):
     idx_all = np.hstack((idx_sac, idx_fix))
     idx_all.sort()
     return eye_events[idx_all]
+
 
 def get_fixinfo(eye_events, stiminfo, task_events, param):
     objID, objpos, objsize, bgID = stiminfo
@@ -256,6 +266,7 @@ def get_fixinfo(eye_events, stiminfo, task_events, param):
     fixinfo['type'].extend([0 if x > obj_dist_threshold else 1 for x in obj_dist])
 
     return fixinfo
+
 
 def get_sacinfo(eye_events, stiminfo, task_events, param):
     objID, objpos, objsize, bgID = stiminfo
@@ -324,6 +335,7 @@ def get_sacinfo(eye_events, stiminfo, task_events, param):
 
     return sacinfo
 
+
 def get_sactype(params, threshold):
     objID_on, objID_off, obj_dist_on, obj_dist_off = params
     if obj_dist_on > threshold and obj_dist_off > threshold:
@@ -338,114 +350,109 @@ def get_sactype(params, threshold):
         return 0
 
 
+if __name__ == "__main__":
+    for species, sbj, sess, rec, blk, stimsetname, tasktype in datasets:
+        if species != selected_species:
+            continue
+        if sbj not in selected_subjects:
+            continue
 
-#   =============================
-#            MAIN ROUTINE
-#   =============================
-for species, sbj, sess, rec, blk, stimsetname, tasktype in datasets:
-    if species != selected_species:
-        continue
-    if sbj not in selected_subjects:
-        continue
+        dataset_name = "{0}:{1}_rec{2}_blk{3}".format(sbj, sess, rec, blk)
+        stim_size_deg = np.array(stim_size[species]) / float(pxlperdeg[species])
+        stim_extent = (-stim_size_deg[0]/2, stim_size_deg[0]/2, -stim_size_deg[1]/2, stim_size_deg[1]/2)
 
-    dataset_name = "{0}:{1}_rec{2}_blk{3}".format(sbj, sess, rec, blk)
-    stim_size_deg = np.array(stim_size[species]) / float(pxlperdeg[species])
-    stim_extent = (-stim_size_deg[0]/2, stim_size_deg[0]/2, -stim_size_deg[1]/2, stim_size_deg[1]/2)
+        # set species specific variables
+        if species == "Human":
+            fn_task = "{dir}/{task}/{sbj}/{sbj}{rec}00{blk}{sym}_task.csv".format(
+                dir=rawdir[species], task=tasktype, sbj=sbj, rec=rec, blk=blk, sym=tasktype[0])
+            fn_eyevex_in = "{dir}/eyeevents/{sbj}{rec}00{blk}{sym}_eyeevent.dat".format(dir=prepdir[species], sbj=sbj, rec=rec, blk=blk, sym=tasktype[0])
+            fn_eyevex_out = "{dir}/{sbj}{rec}00{blk}{sym}_eyeevent_typed.dat".format(dir=savedir, sbj=sbj, rec=rec, blk=blk, sym=tasktype[0])
+        else:
+            fn_task = find_filenames(rawdir[species], sbj, sess, rec, 'task')[0]
+            fn_eyevex_in = "{dir}/{sbj}/eyeevents/{sess}_rec{rec}_blk{blk}_eyeevent.dat".format(dir=prepdir[species], sbj=sbj, sess=sess, rec=rec, blk=blk)
+            fn_eyevex_out = "{dir}/{sess}_rec{rec}_blk{blk}_eyeevent_typed.dat".format(dir=savedir, sbj=sbj, sess=sess, rec=rec, blk=blk)
 
-    # set species specific variables
-    if species == "Human":
-        fn_task = "{dir}/{task}/{sbj}/{sbj}{rec}00{blk}{sym}_task.csv".format(
-            dir=rawdir[species], task=tasktype, sbj=sbj, rec=rec, blk=blk, sym=tasktype[0])
-        fn_eyevex_in = "{dir}/eyeevents/{sbj}{rec}00{blk}{sym}_eyeevent.dat".format(dir=prepdir[species], sbj=sbj, rec=rec, blk=blk, sym=tasktype[0])
-        fn_eyevex_out = "{dir}/{sbj}{rec}00{blk}{sym}_eyeevent_typed.dat".format(dir=savedir, sbj=sbj, rec=rec, blk=blk, sym=tasktype[0])
-    else:
-        fn_task = find_filenames(rawdir[species], sbj, sess, rec, 'task')[0]
-        fn_eyevex_in = "{dir}/{sbj}/eyeevents/{sess}_rec{rec}_blk{blk}_eyeevent.dat".format(dir=prepdir[species], sbj=sbj, sess=sess, rec=rec, blk=blk)
-        fn_eyevex_out = "{dir}/{sess}_rec{rec}_blk{blk}_eyeevent_typed.dat".format(dir=savedir, sbj=sbj, sess=sess, rec=rec, blk=blk)
+        # Load data and metadata from files
+        # --- load parameters from odML file
+        if species == "Monkey" and stimsetname is None:
+            fn_odml = find_filenames(rawdir[species], sbj, sess, rec, 'odml')[0]
+            odlm_param = load_odml(fn_odml, blk)
+            stimsetname = odlm_param['stimsetname']
+        stimsetdir = "{0}/{1}".format(stimdir, stimsetname)
 
-    # =====
-    # ===== load data from files
-    # =====
-    # load parameters from odML file
-    if species == "Monkey" and stimsetname is None:
-        fn_odml = find_filenames(rawdir[species], sbj, sess, rec, 'odml')[0]
-        param = load_odml(fn_odml, blk)
-        stimsetname = param['stimsetname']
-    stimsetdir = "{0}/{1}".format(stimdir, stimsetname)
+        # --- load task events and parameters from task file
+        task_events, task_param = load_task(fn_task, blk)
+        imgIDs = set(task_param['stimID'])
 
-    # load task events and parameters from task file
-    task_events, param = load_task(fn_task, blk)
-    imgIDs = set(param['stimID'])
+        # --- load object information form stimulus files
+        stiminfo = get_stiminfo(species, stimsetdir, imgIDs, stim_size, pxlperdeg)
 
-    # load object information form stimulus files
-    stiminfo = get_stiminfo(species, stimsetdir, imgIDs, stim_size, pxlperdeg)
+        # --- load eye events from eyevex data file
+        eye_events = load_eyevex(fn_eyevex_in)
 
-    # load eye events from eyevex data file
-    eye_events = load_eyevex(fn_eyevex_in)
+        # --- collect fixation info and saccade info regarding objects
+        fixinfo = get_fixinfo(eye_events, stiminfo, task_events, task_param)
+        sacinfo = get_sacinfo(eye_events, stiminfo, task_events, task_param)
 
-    # collect fixation info and saccade info regarding objects
-    fixinfo = get_fixinfo(eye_events, stiminfo, task_events, param)
-    sacinfo = get_sacinfo(eye_events, stiminfo, task_events, param)
+        # Generate database for output
+        # --- create an empty eye event array
+        num_sac = len(sacinfo['type'])
+        num_fix = len(fixinfo['type'])
+        print "{} saccades, {} fixations".format(num_sac, num_fix)
+        print "stimset: {}".format(stimsetdir)
+        num_eyeevent = num_sac + num_fix
+        dtype_eyeevent = [('eventID', int),
+                          ('on', long), ('off', long),
+                          ('x_on', float), ('y_on', float),
+                          ('x_off', float), ('y_off', float),
+                          ('param1', float), ('param2', float),
+                          ('type', int),
+                          ('obj_dist_on', float), ('obj_dist_off', float),
+                          ('objID_on', int), ('objID_off', int),
+                          ('objpos_x_on', float), ('objpos_y_on', float),
+                          ('objpos_x_off', float), ('objpos_y_off', float),
+                          ]
+        eye_events_typed = np.recarray((num_sac + num_fix,), dtype=dtype_eyeevent)
 
-    # create an empty eye event array
-    num_sac = len(sacinfo['type'])
-    num_fix = len(fixinfo['type'])
-    print "{} saccades, {} fixations".format(num_sac, num_fix)
-    print "stimset: {}".format(stimsetdir)
-    num_eyeevent = num_sac + num_fix
-    dtype_eyeevent = [('eventID', int),
-                      ('on', long), ('off', long),
-                      ('x_on', float), ('y_on', float),
-                      ('x_off', float), ('y_off', float),
-                      ('param1', float), ('param2', float),
-                      ('type', int),
-                      ('obj_dist_on', float), ('obj_dist_off', float),
-                      ('objID_on', int), ('objID_off', int),
-                      ('objpos_x_on', float), ('objpos_y_on', float),
-                      ('objpos_x_off', float), ('objpos_y_off', float),
-                      ]
-    eye_events_typed = np.recarray((num_sac + num_fix,), dtype=dtype_eyeevent)
+        # --- fill the array with saccade info
+        eye_events_typed['eventID'][:num_sac] = 100
+        for key in sacinfo:
+            if key in eye_events_typed.dtype.names:
+                eye_events_typed[key][:num_sac] = sacinfo[key]
 
-    # fill saccade info
-    eye_events_typed['eventID'][:num_sac] = 100
-    for key in sacinfo:
-        if key in eye_events_typed.dtype.names:
-            eye_events_typed[key][:num_sac] = sacinfo[key]
+        # --- fill the array with fixation info
+        eye_events_typed['eventID'][num_sac:num_eyeevent] = 200
+        for key in fixinfo:
+            if key in eye_events_typed.dtype.names:
+                eye_events_typed[key][num_sac:num_eyeevent] = fixinfo[key]
+            elif key in ['obj_dist', 'objID', 'objpos_x', 'objpos_y']:
+                value = fixinfo[key]
+                eye_events_typed[key+'_on'][num_sac:num_eyeevent] = value
+                eye_events_typed[key+'_off'][num_sac:num_eyeevent] = value
 
-    # fill fixation info
-    eye_events_typed['eventID'][num_sac:num_eyeevent] = 200
-    for key in fixinfo:
-        if key in eye_events_typed.dtype.names:
-            eye_events_typed[key][num_sac:num_eyeevent] = fixinfo[key]
-        elif key in ['obj_dist', 'objID', 'objpos_x', 'objpos_y']:
-            value = fixinfo[key]
-            eye_events_typed[key+'_on'][num_sac:num_eyeevent] = value
-            eye_events_typed[key+'_off'][num_sac:num_eyeevent] = value
+        eye_events_typed.sort(order='on')
 
-    eye_events_typed.sort(order='on')
+        # Format outputs
+        # --- start with a header line
+        output_lines = []
+        output_lines.append("\t".join(eye_events_typed.dtype.names))
 
-    # generate output lines
-    output_lines = []
+        # --- add comment lines
+        output_lines.append("# original_file: {0}".format(fn_eyevex_in))
+        output_lines.append("# subject: {0}".format(sbj))
+        output_lines.append("# session: {0}".format(sess))
+        output_lines.append("# recording: {0}".format(rec))
+        output_lines.append("# block: {0}".format(blk))
+        output_lines.append("# stimulus_set: {0}".format(stimsetname))
+        output_lines.append("# obj_dist_threshold: {0}".format(obj_dist_threshold))
 
-    # add header line
-    output_lines.append("\t".join(eye_events_typed.dtype.names))
+        # --- add data lines
+        for eye_event in eye_events_typed:
+            output_lines.append("\t".join(map(str, eye_event)))
 
-    # add comment lines
-    output_lines.append("# original_file: {0}".format(fn_eyevex_in))
-    output_lines.append("# subject: {0}".format(sbj))
-    output_lines.append("# session: {0}".format(sess))
-    output_lines.append("# recording: {0}".format(rec))
-    output_lines.append("# block: {0}".format(blk))
-    output_lines.append("# stimulus_set: {0}".format(stimsetname))
-    output_lines.append("# obj_dist_threshold: {0}".format(obj_dist_threshold))
-
-    # add data lines
-    for eye_event in eye_events_typed:
-        output_lines.append("\t".join(map(str, eye_event)))
-
-    # write to output file
-    with open(fn_eyevex_out, "w") as f:
-        f.write("\n".join(output_lines))
-    print "data saved in {0}\n".format(fn_eyevex_out)
+        # Save the output in file
+        with open(fn_eyevex_out, "w") as f:
+            f.write("\n".join(output_lines))
+        print "data saved in {0}\n".format(fn_eyevex_out)
 
 
