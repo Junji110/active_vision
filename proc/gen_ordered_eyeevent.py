@@ -26,17 +26,13 @@ def load_odml(fn_odml, blk):
     # store all relevant metadata parameters in one dictionary
     param = {
         'sampling_rate':
-            metadata['Recording']['HardwareSettings']['DataAcquisition1'].properties['AISampleRate'].value.data,
+            metadata['Recording']['HardwareSettings']['DataAcquisition3'].properties['AISampleRate'].value.data,
         'pxlperdeg': metadata['Recording']['HardwareSettings']['Monitor'].properties['PixelPerDegree'].value.data,
 
         'depth':  metadata['Setup']['Electrode1'].properties['Depth'].value.data,
 
         'evID': [x.data for x in metadata['Experiment']['Behavior']['Task3'].properties['EventID'].value],
         'evtype': [x.data for x in metadata['Experiment']['Behavior']['Task3'].properties['EventType'].value],
-
-        'fn_V1': os.path.basename(metadata['Dataset']['AnalogData1'].properties['File'].value.data),
-        'ChannelName_V1': [str(x.data) for x in metadata['Dataset']['AnalogData1'].properties['ChannelName'].value],
-
         'taskfile': os.path.basename(metadata['Dataset']['EventData'].properties['File'].value.data),
         'num_trials': metadata['Dataset']['EventData'].properties[prefix+'num_trials'].value.data,
         'success': [x.data for x in metadata['Dataset']['EventData'].properties[prefix+'success'].value],
@@ -138,10 +134,12 @@ def load_stimulus_info(params):
         if os.path.exists(fn_imgmat):
             imginfo = sp.io.loadmat(fn_imgmat, squeeze_me=True, struct_as_record=False)
             info = imginfo['information']
+            if np.isnan(info.backgroundid) or np.any([np.isnan(x) for x in info.objectid]):
+                bgID[imgID] = None
+                objIDs[imgID] = None
+                continue
             bgID[imgID] = "{0:03d}".format(info.backgroundid)
             objIDs[imgID] = np.array(info.objectid, int)
-            if objIDs[imgID].size == 1 and np.isnan(objIDs):
-                continue
             objpos[imgID] = np.array(zip(info.object_x_position, info.object_y_position), int)
             objsize[imgID] = np.array(zip(info.object_x_size, info.object_y_size), int)
             objdeg[imgID] = 2.0
@@ -169,7 +167,12 @@ def convert_trial_time_to_clock_count(sacinfo, fixinfo, task_events, params, evI
 
 if __name__ == "__main__":
     for dataset in datasets:
-        species, sbj, sess, rec, blk, stimset, _ = dataset
+        species, sbj, sess, rec, blk, stimset, tasktype = dataset
+        if tasktype in ('fv_stripes', 'eye_calibration'):
+            print("Dataset {}:{}_rec{}_blk{} skipped (tasktype = {})\n".format(
+                sbj, sess, rec, blk, tasktype))
+            continue
+
         fn_eyevex_in = "{dir}/{sbj}/eyeevents/{sess}_rec{rec}_blk{blk}_eyeevent.dat".format(
             dir=prepdir, sbj=sbj, sess=sess, rec=rec, blk=blk)
         fn_eyevex_out = "{dir}/{sess}_rec{rec}_blk{blk}_eyeevent_ordered.dat".format(
@@ -213,8 +216,8 @@ if __name__ == "__main__":
                           ('type', int),
                           ('obj_dist_on', float), ('obj_dist_off', float),
                           ('objID_on', int), ('objID_off', int),
-                          ('objpos_x_on', float), ('objpos_y_on', float),
-                          ('objpos_x_off', float), ('objpos_y_off', float),
+                          ('obj_pos_x_on', float), ('obj_pos_y_on', float),
+                          ('obj_pos_x_off', float), ('obj_pos_y_off', float),
                           ('order', int), ('rev_order', int),
                           ]
         eye_events_typed = np.recarray((num_sac + num_fix,), dtype=dtype_eyeevent)
@@ -224,16 +227,24 @@ if __name__ == "__main__":
         for key in sacinfo:
             if key in eye_events_typed.dtype.names:
                 eye_events_typed[key][:num_sac] = sacinfo[key]
+            elif key == 'velo':
+                eye_events_typed['param1'][:num_sac] = sacinfo[key]
+            elif key == 'accl':
+                eye_events_typed['param2'][:num_sac] = sacinfo[key]
 
         # --- fill the array with fixation info
         eye_events_typed['eventID'][num_sac:num_eyeevent] = 200
         for key in fixinfo:
             if key in eye_events_typed.dtype.names:
                 eye_events_typed[key][num_sac:num_eyeevent] = fixinfo[key]
-            elif key in ['obj_dist', 'objID', 'objpos_x', 'objpos_y']:
+            elif key in ['x', 'y', 'obj_dist', 'objID', 'obj_pos_x', 'obj_pos_y']:
                 value = fixinfo[key]
                 eye_events_typed[key+'_on'][num_sac:num_eyeevent] = value
                 eye_events_typed[key+'_off'][num_sac:num_eyeevent] = value
+                if key == 'x':
+                    eye_events_typed['param1'][num_sac:num_eyeevent] = value
+                if key == 'y':
+                    eye_events_typed['param2'][num_sac:num_eyeevent] = value
 
         eye_events_typed.sort(order='on')
 
@@ -259,3 +270,4 @@ if __name__ == "__main__":
         with open(fn_eyevex_out, "w") as f:
             f.write("\n".join(output_lines))
         print("data saved in {0}\n".format(fn_eyevex_out))
+
