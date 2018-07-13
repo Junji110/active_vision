@@ -198,7 +198,7 @@ def get_stiminfo(species, stimsetdir, imgIDs, tasktype, stim_size=None, pxlperde
     return objID, objpos, objsize, bgID, objdeg, objnum
 
 def get_eyeevent_info(eye_events, stiminfo, task_events, param, minlat=0, objdeg=None, objnum=None, pairing=None,
-                      reject_eccentric_trials=None, fold=(1, 1), maxfixdur=20000, sampling_rate=1):
+                      reject_eccentric_trials=None, fold=(1, 1), maxfixdur=20000, sampling_rate=1, use_trial_time=True):
     objID, objpos, objsize, bgID, objdeg_stim, objnum_stim = stiminfo
 
     fixinfo = {'trialID': [], 'imgID': [], 'bgID': [], 'on': [], 'off': [], 'dur': [], 'x': [], 'y': [], 'objID': [], 'obj_dist': [], 'obj_pos_x': [], 'obj_pos_y': [], 'order': []}
@@ -270,8 +270,12 @@ def get_eyeevent_info(eye_events, stiminfo, task_events, param, minlat=0, objdeg
         fixinfo['imgID'].extend([imgID] * len(fix_trial))
         fixinfo['bgID'].extend([bgID[imgID]] * len(fix_trial))
         fixinfo['order'].extend(range(len(fix_trial)))
-        fixinfo['on'].extend((fix_trial['on']-clkcnt_img_on) / sampling_rate)
-        fixinfo['off'].extend((fix_trial['off']-clkcnt_img_on) / sampling_rate)
+        if use_trial_time:
+            fixinfo['on'].extend((fix_trial['on']-clkcnt_img_on) / sampling_rate)
+            fixinfo['off'].extend((fix_trial['off']-clkcnt_img_on) / sampling_rate)
+        else:
+            fixinfo['on'].extend(fix_trial['on'])
+            fixinfo['off'].extend(fix_trial['off'])
         fixinfo['dur'].extend((fix_trial['off']-fix_trial['on']) / sampling_rate)
 
         fixpos = np.array((fix_trial['param1'], fix_trial['param2'])).swapaxes(0, 1)
@@ -300,8 +304,12 @@ def get_eyeevent_info(eye_events, stiminfo, task_events, param, minlat=0, objdeg
         sacinfo['imgID'].extend([imgID] * len(sac_trial))
         sacinfo['bgID'].extend([bgID[imgID]] * len(sac_trial))
         sacinfo['order'].extend(range(len(sac_trial)))
-        sacinfo['on'].extend((sac_trial['on']-clkcnt_img_on) / sampling_rate)
-        sacinfo['off'].extend((sac_trial['off']-clkcnt_img_on) / sampling_rate)
+        if use_trial_time:
+            sacinfo['on'].extend((sac_trial['on']-clkcnt_img_on) / sampling_rate)
+            sacinfo['off'].extend((sac_trial['off']-clkcnt_img_on) / sampling_rate)
+        else:
+            sacinfo['on'].extend(sac_trial['on'])
+            sacinfo['off'].extend(sac_trial['off'])
         sacinfo['dur'].extend((sac_trial['off']-sac_trial['on']) / sampling_rate)
         sacinfo['velo'].extend(sac_trial['param1'])
         sacinfo['accl'].extend(sac_trial['param2'])
