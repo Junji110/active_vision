@@ -127,7 +127,7 @@ class active_vision_io(object):
         return objIDs, objpos, objsize, bgID, objdeg, objnum
 
 
-def convert_eyeevent_info_to_array(sacinfo, fixinfo):
+def convert_eyeevent_info_to_recarray(sacinfo, fixinfo):
     # --- first, create an empty database array
     num_sac = len(sacinfo['on'])
     num_fix = len(fixinfo['on'])
@@ -173,18 +173,6 @@ def convert_eyeevent_info_to_array(sacinfo, fixinfo):
     return eye_events_arr
 
 
-def convert_trial_time_to_clock_count(sacinfo, fixinfo, task_events, params, evID_on=311):
-    sampling_rate = params['sampling_rate']
-    for i in range(len(sacinfo['trialID'])):
-        trialID = sacinfo['trialID'][i]
-        task_events_trial = task_events[task_events['trial'] == trialID]
-        idx_on = task_events_trial['evtime'][task_events_trial['evID'] == evID_on][0]
-        sacinfo['on'][i] = long(sacinfo['on'][i] * sampling_rate) + idx_on
-        sacinfo['off'][i] = long(sacinfo['off'][i] * sampling_rate) + idx_on
-        fixinfo['on'][i] = long(fixinfo['on'][i] * sampling_rate) + idx_on
-        fixinfo['off'][i] = long(fixinfo['off'][i] * sampling_rate) + idx_on
-
-
 if __name__ == "__main__":
     from parameters.gen_ordered_eyeevent import *
 
@@ -203,8 +191,8 @@ if __name__ == "__main__":
         params = avio.get_params()
         sacinfo, fixinfo = avutils.get_eyeevent_info(eye_events, stiminfo, task_events, params,
                                                      sampling_rate=params['sampling_rate'],
-                                                     pairing=eyeevent_pairing,)
-        convert_trial_time_to_clock_count(sacinfo, fixinfo, task_events, params)
+                                                     pairing=pairing_order,
+                                                     use_trial_time=False)
 
         # identify the type of saccades and fixations
         sactypes = avutils.get_sactype(sacinfo, obj_dist_threshold)
@@ -220,7 +208,7 @@ if __name__ == "__main__":
         fixinfo['rev_order'] = np.array([x if y >= 0 else -1 for x, y in zip(np.roll(sacorder_rev, -1), sacorder_rev)])
 
         # organize the info into a recarray with the same field names as output
-        eye_event_array = convert_eyeevent_info_to_array(sacinfo, fixinfo)
+        eye_event_array = convert_eyeevent_info_to_recarray(sacinfo, fixinfo)
 
         # Generate output lines
         # --- start with a header line
@@ -237,6 +225,7 @@ if __name__ == "__main__":
         output_lines.append("# block: {0}".format(blk))
         output_lines.append("# stimulus_set: {0}".format(stimsetname))
         output_lines.append("# obj_dist_threshold: {0}".format(obj_dist_threshold))
+        output_lines.append("# pairing_order: {0}".format(pairing_order))
         # --- add data lines
         for eye_event in eye_event_array:
             output_lines.append("\t".join(map(str, eye_event)))
