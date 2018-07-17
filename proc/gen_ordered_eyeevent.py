@@ -189,6 +189,13 @@ if __name__ == "__main__":
         eye_events = avio.get_eye_events()
         stiminfo = avio.get_stimulus_info()
         params = avio.get_params()
+
+        if artsac_coeffs is not None:
+            idx_artsac = avutils.identify_artifact_saccades(eye_events, artsac_coeffs)
+            eye_events_orig = eye_events
+            eye_events = avutils.remove_artifact_saccades(eye_events_orig, idx_artsac)
+
+        # collect eye event information in relation to the viewed images
         sacinfo, fixinfo = avutils.get_eyeevent_info(eye_events, stiminfo, task_events, params,
                                                      sampling_rate=params['sampling_rate'],
                                                      pairing=pairing_order,
@@ -226,6 +233,13 @@ if __name__ == "__main__":
         output_lines.append("# stimulus_set: {0}".format(stimsetname))
         output_lines.append("# obj_dist_threshold: {0}".format(obj_dist_threshold))
         output_lines.append("# pairing_order: {0}".format(pairing_order))
+        if artsac_coeffs is None:
+            output_lines.append("# artifact_saccade_removal: 0")
+        else:
+            output_lines.append("# artifact_saccade_removal: 1")
+            output_lines.append("# coeff_amp2velo: {0}".format(artsac_coeffs['amp2velo']))
+            output_lines.append("# coeff_amp2accl: {0}".format(artsac_coeffs['amp2accl']))
+            output_lines.append("# coeff_velo2accl: {0}".format(artsac_coeffs['velo2accl']))
         # --- add data lines
         for eye_event in eye_event_array:
             output_lines.append("\t".join(map(str, eye_event)))
@@ -237,7 +251,9 @@ if __name__ == "__main__":
             f.write("\n".join(output_lines))
         print("Original eyeevent data: {}".format(fn_eyevex_in))
         print("Stimulus set: {}".format(stimsetname))
-        print("{} saccades, {} fixations".format(len(sacinfo['on']), len(fixinfo['on'])))
+        if artsac_coeffs is not None:
+            print("{} (out of {}) artifact saccades removed".format(len(idx_artsac), (eye_events_orig['eventID']==100).sum()))
+        print("{} {} pairs found during trial periods".format(len(sacinfo['on']), pairing_order))
         print("Data saved in {0}".format(fn_eyevex_out))
         print("")
 
