@@ -221,6 +221,8 @@ def get_eyeevent_info(eye_events, stiminfo, task_events, param, minlat=0, objdeg
         taskev_trial = task_events[task_events['trial'] == trialID]
 
         # reject trials with non-specified object size and/or object number
+        if objID[imgID] is None:
+            continue
         if objdeg is not None and objdeg_stim[imgID] != objdeg:
             continue
         if objnum is not None and objnum_stim[imgID] != objnum:
